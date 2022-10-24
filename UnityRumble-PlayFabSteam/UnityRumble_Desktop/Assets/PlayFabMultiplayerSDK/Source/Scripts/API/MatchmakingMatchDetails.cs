@@ -36,11 +36,17 @@ namespace PlayFab.Multiplayer
 
         private IList<string> regionPreferences;
 
+        private MultiplayerServerDetails serverDetails;
+
         internal MatchmakingMatchDetails(InteropWrapper.PFMatchmakingMatchDetails details)
         {
             this.details = details;
             this.members = this.details.Members.Select(x => new MatchmakingTicketMatchMember(x)).ToList();
             this.regionPreferences = details.RegionPreferences.ToList();
+            if (details.ServerDetails != null)
+            {
+                this.serverDetails = new MultiplayerServerDetails(details.ServerDetails);
+            }
         }
 
         /// <summary>
@@ -88,6 +94,21 @@ namespace PlayFab.Multiplayer
             get
             {
                 return this.details.LobbyArrangementString;
+            }
+        }
+
+        /// <summary>
+        /// The details of the server associated with this match.
+        /// </summary>
+        /// <remarks>
+        /// This field will be populated if the matchmaking queue associated with the ticket has enabled PlayFab Multiplayer
+        /// Server allocation.
+        /// </remarks>
+        public MultiplayerServerDetails ServerDetails
+        {
+            get
+            {
+                return serverDetails;
             }
         }
     }

@@ -34,11 +34,16 @@ namespace PlayFab.Party
         private uint _maxPlayerCount;
         const uint _MAX_SUPPORTED_PLAYER_COUNT = PartyConstants.c_maxNetworkConfigurationMaxDeviceCount;
 
+        private PARTY_DIRECT_PEER_CONNECTIVITY_OPTIONS _directPeerConnectivityOptions;
+
         private const string _ErrorMessageMaxUserCountValueOutOfRange = "Value must be between 1 and {0}";
 
         public PlayFabNetworkConfiguration()
         {
             _maxPlayerCount = _MAX_SUPPORTED_PLAYER_COUNT;
+            // default is P2P
+            _directPeerConnectivityOptions = PARTY_DIRECT_PEER_CONNECTIVITY_OPTIONS.PARTY_DIRECT_PEER_CONNECTIVITY_OPTIONS_ANY_PLATFORM_TYPE |
+                                             PARTY_DIRECT_PEER_CONNECTIVITY_OPTIONS.PARTY_DIRECT_PEER_CONNECTIVITY_OPTIONS_ANY_ENTITY_LOGIN_PROVIDER;
         }
 
         /// <summary>
@@ -61,6 +66,21 @@ namespace PlayFab.Party
                 {
                     PlayFabMultiplayerManager._LogError(_ErrorMessageMaxUserCountValueOutOfRange.Replace("{0}", _MAX_SUPPORTED_PLAYER_COUNT.ToString()));
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Direct Peer Connectivity Options of the Network.
+        /// </summary>
+        public PARTY_DIRECT_PEER_CONNECTIVITY_OPTIONS DirectPeerConnectivityOptions
+        {
+            get
+            {
+                return _directPeerConnectivityOptions;
+            }
+            set
+            {
+                _directPeerConnectivityOptions = value;
             }
         }
     }

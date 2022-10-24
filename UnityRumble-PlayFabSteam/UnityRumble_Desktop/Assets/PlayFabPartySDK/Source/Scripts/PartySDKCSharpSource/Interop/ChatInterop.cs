@@ -62,13 +62,13 @@ namespace PartyCSharpSDK.Interop
             PARTY_AUDIO_MANIPULATION_SINK_STREAM_CONFIGURATION* configuration,
             IntPtr asyncIdentifier);
 
-        //PartyChatControlGetPropertyKeys(
+        //PartyChatControlGetSharedPropertyKeys(
         //    PARTY_CHAT_CONTROL_HANDLE chatControl,
         //    _Out_ uint32_t* propertyCount,
         //    _Outptr_result_buffer_(*propertyCount) const PartyString** keys
         //    );
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
-        unsafe internal static extern UInt32 PartyChatControlGetPropertyKeys(
+        unsafe internal static extern UInt32 PartyChatControlGetSharedPropertyKeys(
             PARTY_CHAT_CONTROL_HANDLE chatControl,
             out UInt32 propertyCount,
             out UTF8StringPtr* keys);
@@ -179,14 +179,14 @@ namespace PartyCSharpSDK.Interop
             PARTY_CHAT_CONTROL_HANDLE chatControl,
             out PARTY_DEVICE_HANDLE device);
 
-        //PartyChatControlSetProperties(
+        //PartyChatControlSetSharedProperties(
         //    PARTY_CHAT_CONTROL_HANDLE chatControl,
         //    uint32_t propertyCount,
         //    _In_reads_(propertyCount) const PartyString* keys,
         //    _In_reads_(propertyCount) const PARTY_DATA_BUFFER* values
         //    );
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
-        internal static extern UInt32 PartyChatControlSetProperties(
+        internal static extern UInt32 PartyChatControlSetSharedProperties(
             PARTY_CHAT_CONTROL_HANDLE chatControl,
             UInt32 propertyCount,
             [In] UTF8StringPtr[] keys,
@@ -314,13 +314,13 @@ namespace PartyCSharpSDK.Interop
             PARTY_CHAT_CONTROL_HANDLE chatControl,
             out PARTY_LOCAL_CHAT_CONTROL_CHAT_INDICATOR chatIndicator);
 
-        //PartyChatControlGetProperty(
+        //PartyChatControlGetSharedProperty(
         //    PARTY_CHAT_CONTROL_HANDLE chatControl,
         //    PartyString key,
         //    _Outptr_result_maybenull_ const PARTY_DATA_BUFFER** value
         //    );
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
-        unsafe internal static extern UInt32 PartyChatControlGetProperty(
+        unsafe internal static extern UInt32 PartyChatControlGetSharedProperty(
             PARTY_CHAT_CONTROL_HANDLE chatControl,
             Byte[] key,
             out PARTY_DATA_BUFFER* value);

@@ -9,7 +9,8 @@ namespace PlayFab.Multiplayer.Interop
         public const ulong PFMultiplayerAnyProcessor = 0xffffffffffffffff;
 
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int PFMultiplayerGetErrorMessage(int error, [NativeTypeName("const char **")] sbyte** errorMessage);
+        [return: NativeTypeName("const char *")]
+        public static extern sbyte* PFMultiplayerGetErrorMessage(int error);
 
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int PFMultiplayerSetMemoryCallbacks([NativeTypeName("PFMultiplayerAllocateMemoryCallback")] IntPtr allocateMemoryCallback, [NativeTypeName("PFMultiplayerFreeMemoryCallback")] IntPtr freeMemoryCallback);

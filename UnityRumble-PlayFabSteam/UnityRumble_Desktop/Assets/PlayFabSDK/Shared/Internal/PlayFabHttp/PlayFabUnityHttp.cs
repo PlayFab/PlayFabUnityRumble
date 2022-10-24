@@ -81,7 +81,7 @@ namespace PlayFab.Internal
                 yield return request.Send();
 #endif
 
-#if UNITY_2021_1_OR_NEWER
+#if UNITY_2020_1_OR_NEWER
                 if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
 #else
                 if (request.isNetworkError || request.isHttpError)
@@ -114,56 +114,57 @@ namespace PlayFab.Internal
             var startTime = DateTime.UtcNow;
 #endif
 
-            var www = new UnityWebRequest(reqContainer.FullUrl)
+            using (var www = new UnityWebRequest(reqContainer.FullUrl)
             {
                 uploadHandler = new UploadHandlerRaw(reqContainer.Payload),
                 downloadHandler = new DownloadHandlerBuffer(),
                 method = "POST"
-            };
-
-            foreach (var headerPair in reqContainer.RequestHeaders)
+            })
             {
-                if (!string.IsNullOrEmpty(headerPair.Key) && !string.IsNullOrEmpty(headerPair.Value))
-                    www.SetRequestHeader(headerPair.Key, headerPair.Value);
+                foreach (var headerPair in reqContainer.RequestHeaders)
+                {
+                    if (!string.IsNullOrEmpty(headerPair.Key) && !string.IsNullOrEmpty(headerPair.Value))
+                        www.SetRequestHeader(headerPair.Key, headerPair.Value);
+                    else
+                        Debug.LogWarning("Null header: " + headerPair.Key + " = " + headerPair.Value);
+                }
+
+    #if UNITY_2017_2_OR_NEWER
+                yield return www.SendWebRequest();
+    #else
+                yield return www.Send();
+    #endif
+
+    #if PLAYFAB_REQUEST_TIMING
+                stopwatch.Stop();
+                var timing = new PlayFabHttp.RequestTiming {
+                    StartTimeUtc = startTime,
+                    ApiEndpoint = reqContainer.ApiEndpoint,
+                    WorkerRequestMs = (int)stopwatch.ElapsedMilliseconds,
+                    MainThreadRequestMs = (int)stopwatch.ElapsedMilliseconds
+                };
+                PlayFabHttp.SendRequestTiming(timing);
+    #endif
+
+                if (!string.IsNullOrEmpty(www.error))
+                {
+                    OnError(www.error, reqContainer);
+                }
                 else
-                    Debug.LogWarning("Null header: " + headerPair.Key + " = " + headerPair.Value);
-            }
-
-#if UNITY_2017_2_OR_NEWER
-            yield return www.SendWebRequest();
-#else
-            yield return www.Send();
-#endif
-
-#if PLAYFAB_REQUEST_TIMING
-            stopwatch.Stop();
-            var timing = new PlayFabHttp.RequestTiming {
-                StartTimeUtc = startTime,
-                ApiEndpoint = reqContainer.ApiEndpoint,
-                WorkerRequestMs = (int)stopwatch.ElapsedMilliseconds,
-                MainThreadRequestMs = (int)stopwatch.ElapsedMilliseconds
+                {
+                    try
+                    {
+                        byte[] responseBytes = www.downloadHandler.data;
+                        string responseText = System.Text.Encoding.UTF8.GetString(responseBytes, 0, responseBytes.Length);
+                        OnResponse(responseText, reqContainer);
+                    }
+                    catch (Exception e)
+                    {
+                        OnError("Unhandled error in PlayFabUnityHttp: " + e, reqContainer);
+                    }
+                }
+                www.Dispose();
             };
-            PlayFabHttp.SendRequestTiming(timing);
-#endif
-
-            if (!string.IsNullOrEmpty(www.error))
-            {
-                OnError(www.error, reqContainer);
-            }
-            else
-            {
-                try
-                {
-                    byte[] responseBytes = www.downloadHandler.data;
-                    string responseText = System.Text.Encoding.UTF8.GetString(responseBytes, 0, responseBytes.Length);
-                    OnResponse(responseText, reqContainer);
-                }
-                catch (Exception e)
-                {
-                    OnError("Unhandled error in PlayFabUnityHttp: " + e, reqContainer);
-                }
-            }
-            www.Dispose();
         }
 
         public int GetPendingMessages()

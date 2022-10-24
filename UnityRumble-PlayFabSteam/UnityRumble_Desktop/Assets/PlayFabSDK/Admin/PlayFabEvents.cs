@@ -59,6 +59,8 @@ namespace PlayFab.Events
         public event PlayFabResultEvent<DeleteTitleDataOverrideResult> OnAdminDeleteTitleDataOverrideResultEvent;
         public event PlayFabRequestEvent<ExportMasterPlayerDataRequest> OnAdminExportMasterPlayerDataRequestEvent;
         public event PlayFabResultEvent<ExportMasterPlayerDataResult> OnAdminExportMasterPlayerDataResultEvent;
+        public event PlayFabRequestEvent<ExportPlayersInSegmentRequest> OnAdminExportPlayersInSegmentRequestEvent;
+        public event PlayFabResultEvent<ExportPlayersInSegmentResult> OnAdminExportPlayersInSegmentResultEvent;
         public event PlayFabRequestEvent<GetTaskInstanceRequest> OnAdminGetActionsOnPlayersInSegmentTaskInstanceRequestEvent;
         public event PlayFabResultEvent<GetActionsOnPlayersInSegmentTaskInstanceResult> OnAdminGetActionsOnPlayersInSegmentTaskInstanceResultEvent;
         public event PlayFabRequestEvent<GetAllSegmentsRequest> OnAdminGetAllSegmentsRequestEvent;
@@ -105,10 +107,10 @@ namespace PlayFab.Events
         public event PlayFabResultEvent<GetPublisherDataResult> OnAdminGetPublisherDataResultEvent;
         public event PlayFabRequestEvent<GetRandomResultTablesRequest> OnAdminGetRandomResultTablesRequestEvent;
         public event PlayFabResultEvent<GetRandomResultTablesResult> OnAdminGetRandomResultTablesResultEvent;
+        public event PlayFabRequestEvent<GetPlayersInSegmentExportRequest> OnAdminGetSegmentExportRequestEvent;
+        public event PlayFabResultEvent<GetPlayersInSegmentExportResponse> OnAdminGetSegmentExportResultEvent;
         public event PlayFabRequestEvent<GetSegmentsRequest> OnAdminGetSegmentsRequestEvent;
         public event PlayFabResultEvent<GetSegmentsResponse> OnAdminGetSegmentsResultEvent;
-        public event PlayFabRequestEvent<GetServerBuildInfoRequest> OnAdminGetServerBuildInfoRequestEvent;
-        public event PlayFabResultEvent<GetServerBuildInfoResult> OnAdminGetServerBuildInfoResultEvent;
         public event PlayFabRequestEvent<GetStoreItemsRequest> OnAdminGetStoreItemsRequestEvent;
         public event PlayFabResultEvent<GetStoreItemsResult> OnAdminGetStoreItemsResultEvent;
         public event PlayFabRequestEvent<GetTaskInstancesRequest> OnAdminGetTaskInstancesRequestEvent;
@@ -145,8 +147,6 @@ namespace PlayFab.Events
         public event PlayFabResultEvent<IncrementPlayerStatisticVersionResult> OnAdminIncrementPlayerStatisticVersionResultEvent;
         public event PlayFabRequestEvent<ListOpenIdConnectionRequest> OnAdminListOpenIdConnectionRequestEvent;
         public event PlayFabResultEvent<ListOpenIdConnectionResponse> OnAdminListOpenIdConnectionResultEvent;
-        public event PlayFabRequestEvent<ListBuildsRequest> OnAdminListServerBuildsRequestEvent;
-        public event PlayFabResultEvent<ListBuildsResult> OnAdminListServerBuildsResultEvent;
         public event PlayFabRequestEvent<ListVirtualCurrencyTypesRequest> OnAdminListVirtualCurrencyTypesRequestEvent;
         public event PlayFabResultEvent<ListVirtualCurrencyTypesResult> OnAdminListVirtualCurrencyTypesResultEvent;
         public event PlayFabRequestEvent<ModifyServerBuildRequest> OnAdminModifyServerBuildRequestEvent;
@@ -155,8 +155,6 @@ namespace PlayFab.Events
         public event PlayFabResultEvent<RefundPurchaseResponse> OnAdminRefundPurchaseResultEvent;
         public event PlayFabRequestEvent<RemovePlayerTagRequest> OnAdminRemovePlayerTagRequestEvent;
         public event PlayFabResultEvent<RemovePlayerTagResult> OnAdminRemovePlayerTagResultEvent;
-        public event PlayFabRequestEvent<RemoveServerBuildRequest> OnAdminRemoveServerBuildRequestEvent;
-        public event PlayFabResultEvent<RemoveServerBuildResult> OnAdminRemoveServerBuildResultEvent;
         public event PlayFabRequestEvent<RemoveVirtualCurrencyTypesRequest> OnAdminRemoveVirtualCurrencyTypesRequestEvent;
         public event PlayFabResultEvent<BlankResult> OnAdminRemoveVirtualCurrencyTypesResultEvent;
         public event PlayFabRequestEvent<ResetCharacterStatisticsRequest> OnAdminResetCharacterStatisticsRequestEvent;

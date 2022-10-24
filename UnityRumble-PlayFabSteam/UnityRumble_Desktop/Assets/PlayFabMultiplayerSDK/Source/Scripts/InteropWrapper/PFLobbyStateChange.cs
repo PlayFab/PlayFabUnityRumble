@@ -50,13 +50,37 @@ namespace PlayFab.Multiplayer.InteropWrapper
                 case PFLobbyStateChangeType.CreateAndJoinLobbyCompleted:
                     result = new PFLobbyCreateAndJoinCompletedStateChange(stateChangeUnion, stateChangePtr);
                     break;
+                
+                case PFLobbyStateChangeType.JoinLobbyCompleted:
+                    result = new PFLobbyJoinCompletedStateChange(stateChangeUnion, stateChangePtr);
+                    break;
 
                 case PFLobbyStateChangeType.MemberAdded:
                     result = new PFLobbyMemberAddedStateChange(stateChangeUnion, stateChangePtr);
                     break;
-
+                
+                case PFLobbyStateChangeType.AddMemberCompleted:
+                    result = new PFLobbyAddMemberCompletedStateChange(stateChangeUnion, stateChangePtr);
+                    break;
+                
                 case PFLobbyStateChangeType.MemberRemoved:
                     result = new PFLobbyMemberRemovedStateChange(stateChangeUnion, stateChangePtr);
+                    break;
+
+                case PFLobbyStateChangeType.ForceRemoveMemberCompleted:
+                    result = new PFLobbyForceRemoveMemberCompletedStateChange(stateChangeUnion, stateChangePtr);
+                    break;
+                
+                case PFLobbyStateChangeType.LeaveLobbyCompleted:
+                    result = new PFLobbyLeaveCompletedStateChange(stateChangeUnion, stateChangePtr);
+                    break;
+                
+                case PFLobbyStateChangeType.Updated:
+                    result = new PFLobbyUpdatedStateChange(stateChangeUnion, stateChangePtr);
+                    break;
+                
+                case PFLobbyStateChangeType.PostUpdateCompleted:
+                    result = new PFLobbyPostUpdateCompletedStateChange(stateChangeUnion, stateChangePtr);
                     break;
 
                 case PFLobbyStateChangeType.Disconnecting:
@@ -67,40 +91,24 @@ namespace PlayFab.Multiplayer.InteropWrapper
                     result = new PFLobbyDisconnectedStateChange(stateChangeUnion, stateChangePtr);
                     break;
 
-                case PFLobbyStateChangeType.JoinLobbyCompleted:
-                    result = new PFLobbyJoinCompletedStateChange(stateChangeUnion, stateChangePtr);
-                    break;
-
                 case PFLobbyStateChangeType.JoinArrangedLobbyCompleted:
                     result = new PFLobbyArrangedJoinCompletedStateChange(stateChangeUnion, stateChangePtr);
-                    break;
-
-                case PFLobbyStateChangeType.LeaveLobbyCompleted:
-                    result = new PFLobbyLeaveCompletedStateChange(stateChangeUnion, stateChangePtr);
-                    break;
-
-                case PFLobbyStateChangeType.Updated:
-                    result = new PFLobbyUpdatedStateChange(stateChangeUnion, stateChangePtr);
-                    break;
-
-                case PFLobbyStateChangeType.PostUpdateCompleted:
-                    result = new PFLobbyPostUpdateCompletedStateChange(stateChangeUnion, stateChangePtr);
                     break;
 
                 case PFLobbyStateChangeType.FindLobbiesCompleted:
                     result = new PFLobbyFindLobbiesCompletedStateChange(stateChangeUnion, stateChangePtr); 
                     break;
-
-                case PFLobbyStateChangeType.SendInviteCompleted:
-                    result = new PFLobbySendInviteCompletedStateChange(stateChangeUnion, stateChangePtr);
-                    break;
-
+                
                 case PFLobbyStateChangeType.InviteReceived:
                     result = new PFLobbyInviteReceivedStateChange(stateChangeUnion, stateChangePtr);
                     break;
-
+                
                 case PFLobbyStateChangeType.InviteListenerStatusChanged:
                     result = new PFLobbyInviteListenerStatusChangedStateChange(stateChangeUnion, stateChangePtr);
+                    break;
+
+                case PFLobbyStateChangeType.SendInviteCompleted:
+                    result = new PFLobbySendInviteCompletedStateChange(stateChangeUnion, stateChangePtr);
                     break;
 
                 default:
@@ -152,45 +160,35 @@ namespace PlayFab.Multiplayer.InteropWrapper
         public PFLobbyHandle lobby { get; private set; }
     }
 
-    public class PFLobbyDisconnectingStateChange : PFLobbyStateChange
+    public class PFLobbyJoinCompletedStateChange : PFLobbyStateChange
     {
-        unsafe internal PFLobbyDisconnectingStateChange(
-            PFLobbyStateChangeUnion stateChangeUnion, Interop.PFLobbyStateChange* StateChangeId
-            ) : base((PFLobbyStateChangeType)stateChangeUnion.stateChange.stateChangeType, StateChangeId)
+        unsafe internal PFLobbyJoinCompletedStateChange(PFLobbyStateChangeUnion stateChangeUnion, Interop.PFLobbyStateChange* StateChangeId) :
+            base((PFLobbyStateChangeType)stateChangeUnion.stateChange.stateChangeType, StateChangeId)
         {
             unsafe
             {
 #if CSHARP_7_OR_LATER
-                ref readonly Interop.PFLobbyDisconnectingStateChange stateChangeConverted = ref stateChangeUnion.disconnecting;
+                ref readonly Interop.PFLobbyJoinLobbyCompletedStateChange stateChangeConverted = ref stateChangeUnion.joinCompleted;
 #else
-                Interop.PFLobbyDisconnectingStateChange stateChangeConverted = stateChangeUnion.disconnecting;
+                Interop.PFLobbyJoinCompletedStateChange stateChangeConverted = stateChangeUnion.joinCompleted;
 #endif
-                this.lobby = new PFLobbyHandle(stateChangeConverted.lobby);
-                this.reason = (PFLobbyDisconnectingReason)stateChangeConverted.reason;
-            }
-        }
-
-        public PFLobbyHandle lobby { get; private set; }
-        public PFLobbyDisconnectingReason reason { get; private set; }
-    }
-
-    public class PFLobbyDisconnectedStateChange : PFLobbyStateChange
-    {
-        unsafe internal PFLobbyDisconnectedStateChange(
-            PFLobbyStateChangeUnion stateChange, Interop.PFLobbyStateChange* StateChangeId
-            ) : base((PFLobbyStateChangeType)stateChange.stateChange.stateChangeType, StateChangeId)
-        {
-            unsafe
-            {
-#if CSHARP_7_OR_LATER
-                ref readonly Interop.PFLobbyDisconnectedStateChange stateChangeConverted = ref stateChange.disconnected;
-#else
-                Interop.PFLobbyDisconnectedStateChange stateChangeConverted = stateChange.disconnected;
-#endif
+                this.result = stateChangeConverted.result;
+                Interop.PFEntityKey newMember = stateChangeConverted.newMember;
+                this.newMember = new PFEntityKey(&newMember);
+                this.asyncContext = null;
+                if (stateChangeConverted.asyncContext != null)
+                {
+                    GCHandle asyncGcHandle = GCHandle.FromIntPtr(new IntPtr(stateChangeConverted.asyncContext));
+                    this.asyncContext = asyncGcHandle.Target;
+                    asyncGcHandle.Free();
+                }
                 this.lobby = new PFLobbyHandle(stateChangeConverted.lobby);
             }
         }
 
+        public int result { get; private set; }
+        public PFEntityKey newMember { get; private set; }
+        public Object asyncContext { get; private set; }
         public PFLobbyHandle lobby { get; private set; }
     }
 
@@ -214,30 +212,6 @@ namespace PlayFab.Multiplayer.InteropWrapper
 
         public PFLobbyHandle lobby { get; private set; }
         public PFEntityKey member { get; private set; }
-    }
-
-    public class PFLobbyMemberRemovedStateChange : PFLobbyStateChange
-    {
-        unsafe internal PFLobbyMemberRemovedStateChange(PFLobbyStateChangeUnion stateChangeUnion, Interop.PFLobbyStateChange* StateChangeId) :
-            base((PFLobbyStateChangeType)stateChangeUnion.stateChange.stateChangeType, StateChangeId)
-        {
-            unsafe
-            {
-#if CSHARP_7_OR_LATER
-                ref readonly Interop.PFLobbyMemberRemovedStateChange stateChangeConverted = ref stateChangeUnion.memberRemoved;
-#else
-                Interop.PFLobbyMemberRemovedStateChange stateChangeConverted = stateChangeUnion.memberRemoved;
-#endif
-                this.lobby = new PFLobbyHandle(stateChangeConverted.lobby);
-                Interop.PFEntityKey member = stateChangeConverted.member;
-                this.member = new PFEntityKey(&member);
-                this.reason = (PFLobbyMemberRemovedReason)stateChangeConverted.reason;
-            }
-        }
-
-        public PFLobbyHandle lobby { get; private set; }
-        public PFEntityKey member { get; private set; }
-        public PFLobbyMemberRemovedReason reason { get; private set; }
     }
 
     public class PFLobbyAddMemberCompletedStateChange : PFLobbyStateChange
@@ -272,6 +246,30 @@ namespace PlayFab.Multiplayer.InteropWrapper
         public Object asyncContext { get; private set; }
     }
 
+    public class PFLobbyMemberRemovedStateChange : PFLobbyStateChange
+    {
+        unsafe internal PFLobbyMemberRemovedStateChange(PFLobbyStateChangeUnion stateChangeUnion, Interop.PFLobbyStateChange* StateChangeId) :
+            base((PFLobbyStateChangeType)stateChangeUnion.stateChange.stateChangeType, StateChangeId)
+        {
+            unsafe
+            {
+#if CSHARP_7_OR_LATER
+                ref readonly Interop.PFLobbyMemberRemovedStateChange stateChangeConverted = ref stateChangeUnion.memberRemoved;
+#else
+                Interop.PFLobbyMemberRemovedStateChange stateChangeConverted = stateChangeUnion.memberRemoved;
+#endif
+                this.lobby = new PFLobbyHandle(stateChangeConverted.lobby);
+                Interop.PFEntityKey member = stateChangeConverted.member;
+                this.member = new PFEntityKey(&member);
+                this.reason = (PFLobbyMemberRemovedReason)stateChangeConverted.reason;
+            }
+        }
+
+        public PFLobbyHandle lobby { get; private set; }
+        public PFEntityKey member { get; private set; }
+        public PFLobbyMemberRemovedReason reason { get; private set; }
+    }
+
     public class PFLobbyForceRemoveMemberCompletedStateChange : PFLobbyStateChange
     {
         unsafe internal PFLobbyForceRemoveMemberCompletedStateChange(PFLobbyStateChangeUnion stateChangeUnion, Interop.PFLobbyStateChange* StateChangeId) :
@@ -304,21 +302,21 @@ namespace PlayFab.Multiplayer.InteropWrapper
         public Object asyncContext { get; private set; }
     }
 
-    public class PFLobbyJoinCompletedStateChange : PFLobbyStateChange
+    public class PFLobbyLeaveCompletedStateChange : PFLobbyStateChange
     {
-        unsafe internal PFLobbyJoinCompletedStateChange(PFLobbyStateChangeUnion stateChangeUnion, Interop.PFLobbyStateChange* StateChangeId) :
-            base((PFLobbyStateChangeType)stateChangeUnion.stateChange.stateChangeType, StateChangeId)
+        unsafe internal PFLobbyLeaveCompletedStateChange(
+            PFLobbyStateChangeUnion stateChangeUnion, Interop.PFLobbyStateChange* StateChangeId
+            ) : base((PFLobbyStateChangeType)stateChangeUnion.stateChange.stateChangeType, StateChangeId)
         {
             unsafe
             {
 #if CSHARP_7_OR_LATER
-                ref readonly Interop.PFLobbyJoinLobbyCompletedStateChange stateChangeConverted = ref stateChangeUnion.joinCompleted;
+                ref readonly Interop.PFLobbyLeaveLobbyCompletedStateChange stateChangeConverted = ref stateChangeUnion.leaveCompleted;
 #else
-                Interop.PFLobbyJoinCompletedStateChange stateChangeConverted = stateChangeUnion.joinCompleted;
+                Interop.PFLobbyLeaveCompletedStateChange stateChangeConverted = stateChangeUnion.leaveCompleted;
 #endif
-                this.result = stateChangeConverted.result;
-                Interop.PFEntityKey newMember = stateChangeConverted.newMember;
-                this.newMember = new PFEntityKey(&newMember);
+                Interop.PFEntityKey* localUser = stateChangeConverted.localUser;
+                this.localUser = new PFEntityKey(localUser);
                 this.asyncContext = null;
                 if (stateChangeConverted.asyncContext != null)
                 {
@@ -330,43 +328,9 @@ namespace PlayFab.Multiplayer.InteropWrapper
             }
         }
 
-        public int result { get; private set; }
-        public PFEntityKey newMember { get; private set; }
+        public PFEntityKey localUser { get; private set; }
         public Object asyncContext { get; private set; }
         public PFLobbyHandle lobby { get; private set; }
-    }
-
-
-    public class PFLobbyPostUpdateCompletedStateChange : PFLobbyStateChange
-    {
-        unsafe internal PFLobbyPostUpdateCompletedStateChange(PFLobbyStateChangeUnion stateChangeUnion, Interop.PFLobbyStateChange* StateChangeId) :
-            base((PFLobbyStateChangeType)stateChangeUnion.stateChange.stateChangeType, StateChangeId)
-        {
-            unsafe
-            {
-#if CSHARP_7_OR_LATER
-                ref readonly Interop.PFLobbyPostUpdateCompletedStateChange stateChangeConverted = ref stateChangeUnion.postUpdateCompleted;
-#else
-                Interop.PFLobbyPostUpdateCompletedStateChange stateChangeConverted = stateChangeUnion.postUpdateCompleted;
-#endif
-                this.result = stateChangeConverted.result;
-                this.lobby = new PFLobbyHandle(stateChangeConverted.lobby);
-                Interop.PFEntityKey localUser = stateChangeConverted.localUser;
-                this.localUser = new PFEntityKey(&localUser);
-                this.asyncContext = null;
-                if (stateChangeConverted.asyncContext != null)
-                {
-                    GCHandle asyncGcHandle = GCHandle.FromIntPtr(new IntPtr(stateChangeConverted.asyncContext));
-                    this.asyncContext = asyncGcHandle.Target;
-                    asyncGcHandle.Free();
-                }
-            }
-        }
-
-        public int result;
-        public PFLobbyHandle lobby;
-        public PFEntityKey localUser;
-        public object asyncContext;
     }
 
     public class PFLobbyUpdatedStateChange : PFLobbyStateChange
@@ -406,22 +370,22 @@ namespace PlayFab.Multiplayer.InteropWrapper
         public PFLobbyMemberUpdateSummary[] memberUpdates { get; private set; }
     }
 
-
-    public class PFLobbyLeaveCompletedStateChange : PFLobbyStateChange
+    public class PFLobbyPostUpdateCompletedStateChange : PFLobbyStateChange
     {
-        unsafe internal PFLobbyLeaveCompletedStateChange(
-            PFLobbyStateChangeUnion stateChangeUnion, Interop.PFLobbyStateChange* StateChangeId
-            ) : base((PFLobbyStateChangeType)stateChangeUnion.stateChange.stateChangeType, StateChangeId)
+        unsafe internal PFLobbyPostUpdateCompletedStateChange(PFLobbyStateChangeUnion stateChangeUnion, Interop.PFLobbyStateChange* StateChangeId) :
+            base((PFLobbyStateChangeType)stateChangeUnion.stateChange.stateChangeType, StateChangeId)
         {
             unsafe
             {
 #if CSHARP_7_OR_LATER
-                ref readonly Interop.PFLobbyLeaveLobbyCompletedStateChange stateChangeConverted = ref stateChangeUnion.leaveCompleted;
+                ref readonly Interop.PFLobbyPostUpdateCompletedStateChange stateChangeConverted = ref stateChangeUnion.postUpdateCompleted;
 #else
-                Interop.PFLobbyLeaveCompletedStateChange stateChangeConverted = stateChangeUnion.leaveCompleted;
+                Interop.PFLobbyPostUpdateCompletedStateChange stateChangeConverted = stateChangeUnion.postUpdateCompleted;
 #endif
-                Interop.PFEntityKey* localUser = stateChangeConverted.localUser;
-                this.localUser = new PFEntityKey(localUser);
+                this.result = stateChangeConverted.result;
+                this.lobby = new PFLobbyHandle(stateChangeConverted.lobby);
+                Interop.PFEntityKey localUser = stateChangeConverted.localUser;
+                this.localUser = new PFEntityKey(&localUser);
                 this.asyncContext = null;
                 if (stateChangeConverted.asyncContext != null)
                 {
@@ -429,12 +393,54 @@ namespace PlayFab.Multiplayer.InteropWrapper
                     this.asyncContext = asyncGcHandle.Target;
                     asyncGcHandle.Free();
                 }
+            }
+        }
+
+        public int result;
+        public PFLobbyHandle lobby;
+        public PFEntityKey localUser;
+        public object asyncContext;
+    }
+
+    public class PFLobbyDisconnectingStateChange : PFLobbyStateChange
+    {
+        unsafe internal PFLobbyDisconnectingStateChange(
+            PFLobbyStateChangeUnion stateChangeUnion, Interop.PFLobbyStateChange* StateChangeId
+            ) : base((PFLobbyStateChangeType)stateChangeUnion.stateChange.stateChangeType, StateChangeId)
+        {
+            unsafe
+            {
+#if CSHARP_7_OR_LATER
+                ref readonly Interop.PFLobbyDisconnectingStateChange stateChangeConverted = ref stateChangeUnion.disconnecting;
+#else
+                Interop.PFLobbyDisconnectingStateChange stateChangeConverted = stateChangeUnion.disconnecting;
+#endif
+                this.lobby = new PFLobbyHandle(stateChangeConverted.lobby);
+                this.reason = (PFLobbyDisconnectingReason)stateChangeConverted.reason;
+            }
+        }
+
+        public PFLobbyHandle lobby { get; private set; }
+        public PFLobbyDisconnectingReason reason { get; private set; }
+    }
+
+    public class PFLobbyDisconnectedStateChange : PFLobbyStateChange
+    {
+        unsafe internal PFLobbyDisconnectedStateChange(
+            PFLobbyStateChangeUnion stateChange, Interop.PFLobbyStateChange* StateChangeId
+            ) : base((PFLobbyStateChangeType)stateChange.stateChange.stateChangeType, StateChangeId)
+        {
+            unsafe
+            {
+#if CSHARP_7_OR_LATER
+                ref readonly Interop.PFLobbyDisconnectedStateChange stateChangeConverted = ref stateChange.disconnected;
+#else
+                Interop.PFLobbyDisconnectedStateChange stateChangeConverted = stateChange.disconnected;
+#endif
                 this.lobby = new PFLobbyHandle(stateChangeConverted.lobby);
             }
         }
 
-        public PFEntityKey localUser { get; private set; }
-        public Object asyncContext { get; private set; }
         public PFLobbyHandle lobby { get; private set; }
     }
 
@@ -516,42 +522,6 @@ namespace PlayFab.Multiplayer.InteropWrapper
         public List<PFLobbySearchResult> searchResults { get; private set; }
     }
 
-    public class PFLobbySendInviteCompletedStateChange : PFLobbyStateChange
-    {
-        unsafe internal PFLobbySendInviteCompletedStateChange(
-            PFLobbyStateChangeUnion stateChangeUnion, Interop.PFLobbyStateChange* StateChangeId
-            ) : base((PFLobbyStateChangeType)stateChangeUnion.stateChange.stateChangeType, StateChangeId)
-        {
-            unsafe
-            {
-#if CSHARP_7_OR_LATER
-                ref readonly Interop.PFLobbySendInviteCompletedStateChange stateChangeConverted = ref stateChangeUnion.sendInviteCompleted;
-#else
-                Interop.PFLobbySendInviteCompletedStateChange stateChangeConverted = stateChangeUnion.sendInviteCompleted;
-#endif
-                this.result = stateChangeConverted.result;
-                this.lobby = new PFLobbyHandle(stateChangeConverted.lobby);
-                Interop.PFEntityKey sender = stateChangeConverted.sender;
-                this.sender = new PFEntityKey(&sender);
-                Interop.PFEntityKey invitee = stateChangeConverted.invitee;
-                this.invitee = new PFEntityKey(&invitee);
-
-                if (stateChangeConverted.asyncContext != null)
-                {
-                    GCHandle asyncGcHandle = GCHandle.FromIntPtr(new IntPtr(stateChangeConverted.asyncContext));
-                    this.asyncContext = asyncGcHandle.Target;
-                    asyncGcHandle.Free();
-                }
-            }
-        }
-
-        public int result { get; private set; }
-        public PFLobbyHandle lobby { get; private set; }
-        public PFEntityKey sender { get; private set; }
-        public PFEntityKey invitee { get; private set; }
-        public object asyncContext { get; private set; }
-    }
-
     public class PFLobbyInviteListenerStatusChangedStateChange : PFLobbyStateChange
     {
         unsafe internal PFLobbyInviteListenerStatusChangedStateChange(
@@ -597,6 +567,42 @@ namespace PlayFab.Multiplayer.InteropWrapper
         public PFEntityKey listeningEntity { get; private set; }
         public PFEntityKey invitingEntity { get; private set; }
         public string connectionString { get; private set; }
+    }
+
+    public class PFLobbySendInviteCompletedStateChange : PFLobbyStateChange
+    {
+        unsafe internal PFLobbySendInviteCompletedStateChange(
+            PFLobbyStateChangeUnion stateChangeUnion, Interop.PFLobbyStateChange* StateChangeId
+            ) : base((PFLobbyStateChangeType)stateChangeUnion.stateChange.stateChangeType, StateChangeId)
+        {
+            unsafe
+            {
+#if CSHARP_7_OR_LATER
+                ref readonly Interop.PFLobbySendInviteCompletedStateChange stateChangeConverted = ref stateChangeUnion.sendInviteCompleted;
+#else
+                Interop.PFLobbySendInviteCompletedStateChange stateChangeConverted = stateChangeUnion.sendInviteCompleted;
+#endif
+                this.result = stateChangeConverted.result;
+                this.lobby = new PFLobbyHandle(stateChangeConverted.lobby);
+                Interop.PFEntityKey sender = stateChangeConverted.sender;
+                this.sender = new PFEntityKey(&sender);
+                Interop.PFEntityKey invitee = stateChangeConverted.invitee;
+                this.invitee = new PFEntityKey(&invitee);
+
+                if (stateChangeConverted.asyncContext != null)
+                {
+                    GCHandle asyncGcHandle = GCHandle.FromIntPtr(new IntPtr(stateChangeConverted.asyncContext));
+                    this.asyncContext = asyncGcHandle.Target;
+                    asyncGcHandle.Free();
+                }
+            }
+        }
+
+        public int result { get; private set; }
+        public PFLobbyHandle lobby { get; private set; }
+        public PFEntityKey sender { get; private set; }
+        public PFEntityKey invitee { get; private set; }
+        public object asyncContext { get; private set; }
     }
 }
 

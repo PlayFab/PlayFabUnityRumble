@@ -38,23 +38,18 @@ namespace PlayFab.Multiplayer.InteropWrapper
         public const uint PFLobbyMaxMemberPropertyCount = Interop.Methods.PFLobbyMaxMemberPropertyCount;
         public const uint PFLobbyClientRequestedSearchResultCountUpperLimit = Interop.Methods.PFLobbyClientRequestedSearchResultCountUpperLimit;
 
-        public static int PFMultiplayerGetErrorMessage(
-            int hresult,
-            out string errorMessage)
+        public static string PFMultiplayerGetErrorMessage(
+            int hresult)
         {
-            errorMessage = null;
             unsafe
             {
-                sbyte* errorMessagePtr;
-                int err = Methods.PFMultiplayerGetErrorMessage(
-                    hresult,
-                    &errorMessagePtr);
-                if (LobbyError.SUCCEEDED(err))
+                sbyte* errorMessagePtr = Methods.PFMultiplayerGetErrorMessage(hresult);
+                if (errorMessagePtr != null)
                 {
-                    errorMessage = Converters.PtrToStringUTF8((IntPtr)errorMessagePtr);
+                    return Converters.PtrToStringUTF8((IntPtr)errorMessagePtr);
                 }
 
-                return err;
+                return null;
             }
         }
 

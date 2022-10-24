@@ -41,7 +41,7 @@ namespace PlayFab.Party._Internal
         bool IsTextToSpeechEnabled();
         PARTY_CHAT_PERMISSION_OPTIONS GetChatPermissions(PlayFabPlayer targetPlayer);
         void CreateOrUpdatePlatformUser(PlayFabPlayer player, bool isLocal);
-        void ProcessEndpointMessage(PlayFabPlayer fromPlayer, IntPtr messageBuffer, uint messageSize);
+        void ProcessEndpointMessage(PlayFabPlayer fromPlayer, IntPtr messageBuffer, uint messageSize, out bool isInternalMessage);
 
         void ProcessQueuedOperations();
 

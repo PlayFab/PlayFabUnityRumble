@@ -428,6 +428,35 @@ namespace PlayFab.Multiplayer
             return properties;
         }
 
+        /// <summary>
+        /// Determines a member's connection status to the notification service.
+        /// <summary>
+        /// <remarks>
+        /// When joining a lobby, the library establishes a WebSocket connection to the PlayFab PubSub notification service.
+        /// This connection is used to provide real-time updates to the library about the lobby. This method can be used to
+        /// determine a member's connection status, which is useful for diagnosing a member's ability to receive updates
+        /// about the lobby.
+        /// <para>
+        /// A local member which is still in the process of asychronously joining the lobby, via a call to any of
+        /// <see cref="PlayFabMultiplayer.CreateAndJoinLobby" />, <see cref="PlayFabMultiplayer.JoinLobby" />,
+        /// or <see cref="Lobby.AddMember" /> will see their connection
+        /// status as <see cref="LobbyMemberConnectionStatus.NotConnected" /> until the connection is established.
+        /// When a user's connection status changes from <see cref="LobbyMemberConnectionStatus.Connected" /> to
+        /// <see cref="LobbyMemberConnectionStatus.NotConnected" />, they may be experiencing connectivity issues - or their game may
+        /// have crashed. The lobby owner can remove such users from the lobby via <see cref="Lobby.ForceRemoveMember" />
+        /// <param name="member">
+        /// The member being queried.
+        /// </param>
+        /// <returns>
+        /// The connection status of a member of the lobby.
+        /// </returns>
+        public LobbyMemberConnectionStatus GetMemberConnectionStatus(PFEntityKey member)
+        {
+            InteropWrapper.PFLobbyMemberConnectionStatus memberConnectionStatus;
+            PlayFabMultiplayer.Succeeded(InteropWrapper.PFMultiplayer.PFLobbyGetMemberConnectionStatus(this.Handle, member.EntityKey, out memberConnectionStatus));
+            return (LobbyMemberConnectionStatus)memberConnectionStatus;
+        }
+
 #if UNITY_2017_1_OR_NEWER
         /// <summary>
         /// Post an update to the lobby.

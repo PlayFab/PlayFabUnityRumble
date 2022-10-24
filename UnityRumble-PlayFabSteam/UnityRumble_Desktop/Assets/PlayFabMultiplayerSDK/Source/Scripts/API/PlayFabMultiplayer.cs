@@ -1392,8 +1392,7 @@ namespace PlayFab.Multiplayer
             Succeeded(result); // log failures
             if (LobbyError.FAILED(result))
             {
-                string errorMessage;
-                InteropWrapper.PFMultiplayer.PFMultiplayerGetErrorMessage(result, out errorMessage);
+                string errorMessage = InteropWrapper.PFMultiplayer.PFMultiplayerGetErrorMessage(result);
                 throw new Exception($"PlayFabMultiplayer.Initialize failed. {errorMessage}");
             }
             else
@@ -1479,11 +1478,27 @@ namespace PlayFab.Multiplayer
                                     stateChangeConverted.result);
                                 break;
                             }
+                        
+                        case InteropWrapper.PFLobbyStateChangeType.JoinLobbyCompleted:
+                            {
+                                var stateChangeConverted = (InteropWrapper.PFLobbyJoinCompletedStateChange)stateChange;
+                                Succeeded(stateChangeConverted.result);
+                                OnLobbyJoinCompleted?.Invoke(Lobby.GetLobbyUsingCache(stateChangeConverted.lobby), new PFEntityKey(stateChangeConverted.newMember), stateChangeConverted.result);
+                                break;
+                            }
 
                         case InteropWrapper.PFLobbyStateChangeType.MemberAdded:
                             {
                                 var stateChangeConverted = (InteropWrapper.PFLobbyMemberAddedStateChange)stateChange;
                                 OnLobbyMemberAdded?.Invoke(Lobby.GetLobbyUsingCache(stateChangeConverted.lobby), new PFEntityKey(stateChangeConverted.member));
+                                break;
+                            }
+                        
+                        case InteropWrapper.PFLobbyStateChangeType.AddMemberCompleted:
+                            {
+                                var stateChangeConverted = (InteropWrapper.PFLobbyAddMemberCompletedStateChange)stateChange;
+                                Succeeded(stateChangeConverted.result);
+                                OnAddMemberCompleted?.Invoke(Lobby.GetLobbyUsingCache(stateChangeConverted.lobby), new PFEntityKey(stateChangeConverted.localUser), stateChangeConverted.result);
                                 break;
                             }
 
@@ -1494,26 +1509,10 @@ namespace PlayFab.Multiplayer
                                 break;
                             }
 
-                        case InteropWrapper.PFLobbyStateChangeType.AddMemberCompleted:
-                            {
-                                var stateChangeConverted = (InteropWrapper.PFLobbyAddMemberCompletedStateChange)stateChange;
-                                Succeeded(stateChangeConverted.result);
-                                OnAddMemberCompleted?.Invoke(Lobby.GetLobbyUsingCache(stateChangeConverted.lobby), new PFEntityKey(stateChangeConverted.localUser), stateChangeConverted.result);
-                                break;
-                            }
-
                         case InteropWrapper.PFLobbyStateChangeType.ForceRemoveMemberCompleted:
                             {
                                 var stateChangeConverted = (InteropWrapper.PFLobbyForceRemoveMemberCompletedStateChange)stateChange;
                                 OnForceRemoveMemberCompleted?.Invoke(Lobby.GetLobbyUsingCache(stateChangeConverted.lobby), new PFEntityKey(stateChangeConverted.targetMember), stateChangeConverted.result);
-                                break;
-                            }
-
-                        case InteropWrapper.PFLobbyStateChangeType.JoinLobbyCompleted:
-                            {
-                                var stateChangeConverted = (InteropWrapper.PFLobbyJoinCompletedStateChange)stateChange;
-                                Succeeded(stateChangeConverted.result);
-                                OnLobbyJoinCompleted?.Invoke(Lobby.GetLobbyUsingCache(stateChangeConverted.lobby), new PFEntityKey(stateChangeConverted.newMember), stateChangeConverted.result);
                                 break;
                             }
 
@@ -1535,6 +1534,17 @@ namespace PlayFab.Multiplayer
                                     stateChangeConverted.updatedSearchPropertyKeys.ToList(),
                                     stateChangeConverted.updatedLobbyPropertyKeys.ToList(),
                                     memberUpdates);
+                                break;
+                            }
+                        
+                        case InteropWrapper.PFLobbyStateChangeType.PostUpdateCompleted:
+                            {
+                                var stateChangeConverted = (InteropWrapper.PFLobbyPostUpdateCompletedStateChange)stateChange;
+                                Succeeded(stateChangeConverted.result);
+                                OnLobbyPostUpdateCompleted?.Invoke(
+                                    Lobby.GetLobbyUsingCache(stateChangeConverted.lobby),
+                                    new PFEntityKey(stateChangeConverted.localUser),
+                                    stateChangeConverted.result);
                                 break;
                             }
 
@@ -1573,17 +1583,6 @@ namespace PlayFab.Multiplayer
                                 break;
                             }
 
-                        case InteropWrapper.PFLobbyStateChangeType.PostUpdateCompleted:
-                            {
-                                var stateChangeConverted = (InteropWrapper.PFLobbyPostUpdateCompletedStateChange)stateChange;
-                                Succeeded(stateChangeConverted.result);
-                                OnLobbyPostUpdateCompleted?.Invoke(
-                                    Lobby.GetLobbyUsingCache(stateChangeConverted.lobby),
-                                    new PFEntityKey(stateChangeConverted.localUser),
-                                    stateChangeConverted.result);
-                                break;
-                            }
-
                         case InteropWrapper.PFLobbyStateChangeType.FindLobbiesCompleted:
                             {
                                 var stateChangeConverted = (InteropWrapper.PFLobbyFindLobbiesCompletedStateChange)stateChange;
@@ -1601,20 +1600,7 @@ namespace PlayFab.Multiplayer
                                     stateChangeConverted.result);
                                 break;
                             }
-
-                        case InteropWrapper.PFLobbyStateChangeType.SendInviteCompleted:
-                            {
-                                var stateChangeConverted = (InteropWrapper.PFLobbySendInviteCompletedStateChange)stateChange;
-                                Succeeded(stateChangeConverted.result);
-
-                                OnLobbySendInviteCompleted?.Invoke(
-                                    Lobby.GetLobbyUsingCache(stateChangeConverted.lobby),
-                                    new PFEntityKey(stateChangeConverted.sender),
-                                    new PFEntityKey(stateChangeConverted.invitee),
-                                    stateChangeConverted.result);
-                                break;
-                            }
-
+                        
                         case InteropWrapper.PFLobbyStateChangeType.InviteReceived:
                             {
                                 var stateChangeConverted = (InteropWrapper.PFLobbyInviteReceivedStateChange)stateChange;
@@ -1634,6 +1620,19 @@ namespace PlayFab.Multiplayer
                                 OnLobbyInviteListenerStatusChanged?.Invoke(
                                     listeningEntity,
                                     newStatus);
+                                break;
+                            }
+
+                        case InteropWrapper.PFLobbyStateChangeType.SendInviteCompleted:
+                            {
+                                var stateChangeConverted = (InteropWrapper.PFLobbySendInviteCompletedStateChange)stateChange;
+                                Succeeded(stateChangeConverted.result);
+
+                                OnLobbySendInviteCompleted?.Invoke(
+                                    Lobby.GetLobbyUsingCache(stateChangeConverted.lobby),
+                                    new PFEntityKey(stateChangeConverted.sender),
+                                    new PFEntityKey(stateChangeConverted.invitee),
+                                    stateChangeConverted.result);
                                 break;
                             }
                     }
@@ -1725,14 +1724,13 @@ namespace PlayFab.Multiplayer
 
         internal static void LogError(int code)
         {
-            string errorMessage;
-            int getErrorCodeError = InteropWrapper.PFMultiplayer.PFMultiplayerGetErrorMessage(code, out errorMessage);
-            if (!Succeeded(getErrorCodeError))
+            string errorMessage = InteropWrapper.PFMultiplayer.PFMultiplayerGetErrorMessage(code);
+            if (errorMessage == null)
             {
                 errorMessage = "Unknown error";
             }
 
-            errorMessage += string.Format(" 0x%0.8x", (uint)code);
+            errorMessage += string.Format(" 0x{0:X}", (uint)code);
 
             // If we hit an error while cleaning up the PlayFabMultiplayer, don't attempt to raise the
             // error event because it will fail.
