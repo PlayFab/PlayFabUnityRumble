@@ -15,15 +15,11 @@ MonoBehaviour:
   TitleId: 
   DeveloperSecretKey: 
   ProductionEnvironmentUrl: 
-  RequestType: 0
-  AdvertisingIdType: 
-  AdvertisingIdValue: 
-  DisableAdvertising: 0
+  RequestType: 2
   DisableDeviceInfo: 0
   DisableFocusTimeCollection: 0
   RequestTimeout: 2000
   RequestKeepAlive: 1
-  CompressApiData: 1
   LogLevel: 12
   LoggerHost: 
   LoggerPort: 0

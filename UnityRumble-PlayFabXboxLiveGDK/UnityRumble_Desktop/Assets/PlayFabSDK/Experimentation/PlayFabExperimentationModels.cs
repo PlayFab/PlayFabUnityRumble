@@ -60,11 +60,6 @@ namespace PlayFab.ExperimentationModels
         /// </summary>
         public string Description;
         /// <summary>
-        /// The duration of the experiment, in days.
-        /// </summary>
-        [Obsolete("Use 'EndDate' instead", false)]
-        public uint? Duration;
-        /// <summary>
         /// When experiment should end.
         /// </summary>
         public DateTime? EndDate;
@@ -186,11 +181,6 @@ namespace PlayFab.ExperimentationModels
         /// Description of the experiment.
         /// </summary>
         public string Description;
-        /// <summary>
-        /// The duration of the experiment, in days.
-        /// </summary>
-        [Obsolete("Use 'EndDate' instead", false)]
-        public uint? Duration;
         /// <summary>
         /// When experiment should end/was ended.
         /// </summary>
@@ -375,7 +365,7 @@ namespace PlayFab.ExperimentationModels
         /// </summary>
         public Dictionary<string,string> CustomTags;
         /// <summary>
-        /// The entity to perform this action on.
+        /// The optional entity to perform this action on. Defaults to the currently logged in entity.
         /// </summary>
         public EntityKey Entity;
     }
@@ -588,11 +578,6 @@ namespace PlayFab.ExperimentationModels
         /// Description of the experiment.
         /// </summary>
         public string Description;
-        /// <summary>
-        /// The duration of the experiment, in days.
-        /// </summary>
-        [Obsolete("Use 'EndDate' instead", false)]
-        public uint? Duration;
         /// <summary>
         /// When experiment should end.
         /// </summary>

@@ -277,10 +277,6 @@ namespace PlayFab.ServerModels
         /// </summary>
         public string IPAddress;
         /// <summary>
-        /// The MAC address on which the ban was applied. May affect multiple players.
-        /// </summary>
-        public string MACAddress;
-        /// <summary>
         /// Unique PlayFab assigned ID of the user on whom the operation will be performed.
         /// </summary>
         public string PlayFabId;
@@ -1919,7 +1915,7 @@ namespace PlayFab.ServerModels
         EvaluationModePlayerCountExceeded,
         GetPlayersInSegmentRateLimitExceeded,
         CloudScriptFunctionNameSizeExceeded,
-        InsightsManagementTitleInEvaluationMode,
+        PaidInsightsFeaturesNotEnabled,
         CloudScriptAzureFunctionsQueueRequestError,
         EvaluationModeTitleCountExceeded,
         InsightsManagementTitleNotInFlight,
@@ -1938,6 +1934,40 @@ namespace PlayFab.ServerModels
         DuplicateKeys,
         WasNotCreatedWithCloudRoot,
         LegacyMultiplayerServersDeprecated,
+        VirtualCurrencyCurrentlyUnavailable,
+        SteamUserNotFound,
+        ElasticSearchOperationFailed,
+        NotImplemented,
+        PublisherNotFound,
+        PublisherDeleted,
+        ApiDisabledForMigration,
+        ResourceNameUpdateNotAllowed,
+        ApiNotEnabledForTitle,
+        DuplicateTitleNameForPublisher,
+        AzureTitleCreationInProgress,
+        TitleConstraintsPublisherDeletion,
+        InvalidPlayerAccountPoolId,
+        PlayerAccountPoolNotFound,
+        PlayerAccountPoolDeleted,
+        TitleCleanupInProgress,
+        AzureResourceConcurrentOperationInProgress,
+        TitlePublisherUpdateNotAllowed,
+        AzureResourceManagerNotSupportedInStamp,
+        ApiNotIncludedInAzurePlayFabFeatureSet,
+        GoogleServiceAccountFailedAuth,
+        GoogleAPIServiceUnavailable,
+        GoogleAPIServiceUnknownError,
+        NoValidIdentityForAad,
+        PlayerIdentityLinkNotFound,
+        PhotonApplicationIdAlreadyInUse,
+        CloudScriptUnableToDeleteProductionRevision,
+        CustomIdNotFound,
+        AutomationInvalidInput,
+        AutomationInvalidRuleName,
+        AutomationRuleAlreadyExists,
+        AutomationRuleLimitExceeded,
+        InvalidGooglePlayGamesServerAuthCode,
+        StorageAccountNotFound,
         MatchmakingEntityInvalid,
         MatchmakingPlayerAttributesInvalid,
         MatchmakingQueueNotFound,
@@ -1959,9 +1989,15 @@ namespace PlayFab.ServerModels
         MatchmakingQueueLimitExceeded,
         MatchmakingRequestTypeMismatch,
         MatchmakingBadRequest,
+        PubSubFeatureNotEnabledForTitle,
+        PubSubTooManyRequests,
+        PubSubConnectionNotFoundForEntity,
+        PubSubConnectionHandleInvalid,
+        PubSubSubscriptionLimitExceeded,
         TitleConfigNotFound,
         TitleConfigUpdateConflict,
         TitleConfigSerializationError,
+        CatalogApiNotImplemented,
         CatalogEntityInvalid,
         CatalogTitleIdMissing,
         CatalogPlayerIdMissing,
@@ -1999,9 +2035,27 @@ namespace PlayFab.ServerModels
         ExportCannotParseQuery,
         ExportControlCommandsNotAllowed,
         ExportQueryMissingTableReference,
+        ExportInsightsV1Deprecated,
+        ExplorerBasicInvalidQueryName,
+        ExplorerBasicInvalidQueryDescription,
+        ExplorerBasicInvalidQueryConditions,
+        ExplorerBasicInvalidQueryStartDate,
+        ExplorerBasicInvalidQueryEndDate,
+        ExplorerBasicInvalidQueryGroupBy,
+        ExplorerBasicInvalidQueryAggregateType,
+        ExplorerBasicInvalidQueryAggregateProperty,
+        ExplorerBasicLoadQueriesError,
+        ExplorerBasicLoadQueryError,
+        ExplorerBasicCreateQueryError,
+        ExplorerBasicDeleteQueryError,
+        ExplorerBasicUpdateQueryError,
+        ExplorerBasicSavedQueriesLimit,
+        ExplorerBasicSavedQueryNotFound,
+        TenantShardMapperShardNotFound,
         TitleNotEnabledForParty,
         PartyVersionNotFound,
         MultiplayerServerBuildReferencedByMatchmakingQueue,
+        MultiplayerServerBuildReferencedByBuildAlias,
         ExperimentationExperimentStopped,
         ExperimentationExperimentRunning,
         ExperimentationExperimentNotFound,
@@ -2024,6 +2078,7 @@ namespace PlayFab.ServerModels
         ExperimentationExclusionGroupInsufficientCapacity,
         ExperimentationExclusionGroupCannotDelete,
         ExperimentationExclusionGroupInvalidTrafficAllocation,
+        ExperimentationExclusionGroupInvalidName,
         MaxActionDepthExceeded,
         TitleNotOnUpdatedPricingPlan,
         SegmentManagementTitleNotInFlight,
@@ -2037,7 +2092,42 @@ namespace PlayFab.ServerModels
         CreateSegmentRateLimitExceeded,
         UpdateSegmentRateLimitExceeded,
         GetSegmentsRateLimitExceeded,
-        SnapshotNotFound
+        AsyncExportNotInFlight,
+        AsyncExportNotFound,
+        AsyncExportRateLimitExceeded,
+        SnapshotNotFound,
+        InventoryApiNotImplemented,
+        LobbyDoesNotExist,
+        LobbyRateLimitExceeded,
+        LobbyPlayerAlreadyJoined,
+        LobbyNotJoinable,
+        LobbyMemberCannotRejoin,
+        LobbyCurrentPlayersMoreThanMaxPlayers,
+        LobbyPlayerNotPresent,
+        LobbyBadRequest,
+        LobbyPlayerMaxLobbyLimitExceeded,
+        LobbyNewOwnerMustBeConnected,
+        LobbyCurrentOwnerStillConnected,
+        LobbyMemberIsNotOwner,
+        EventSamplingInvalidRatio,
+        EventSamplingInvalidEventNamespace,
+        EventSamplingInvalidEventName,
+        EventSamplingRatioNotFound,
+        EventSinkConnectionInvalid,
+        EventSinkConnectionUnauthorized,
+        EventSinkRegionInvalid,
+        EventSinkLimitExceeded,
+        EventSinkSasTokenInvalid,
+        EventSinkNotFound,
+        EventSinkNameInvalid,
+        EventSinkSasTokenPermissionInvalid,
+        EventSinkSecretInvalid,
+        EventSinkTenantNotFound,
+        EventSinkAadNotFound,
+        EventSinkDatabaseNotFound,
+        OperationCanceled,
+        InvalidDisplayNameRandomSuffixLength,
+        AllowNonUniquePlayerDisplayNamesDisableNotAllowed
     }
 
     [Serializable]
@@ -2481,10 +2571,6 @@ namespace PlayFab.ServerModels
     [Serializable]
     public class GetLeaderboardForUsersCharactersRequest : PlayFabRequestCommon
     {
-        /// <summary>
-        /// Maximum number of entries to retrieve.
-        /// </summary>
-        public int MaxResultsCount;
         /// <summary>
         /// Unique PlayFab assigned ID of the user on whom the operation will be performed.
         /// </summary>
@@ -2983,6 +3069,27 @@ namespace PlayFab.ServerModels
     }
 
     [Serializable]
+    public class GetPlayFabIDsFromNintendoServiceAccountIdsRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// Array of unique Nintendo Switch Account identifiers for which the title needs to get PlayFab identifiers.
+        /// </summary>
+        public List<string> NintendoAccountIds;
+    }
+
+    /// <summary>
+    /// For Nintendo Service Account identifiers which have not been linked to PlayFab accounts, null will be returned.
+    /// </summary>
+    [Serializable]
+    public class GetPlayFabIDsFromNintendoServiceAccountIdsResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// Mapping of Nintendo Switch Service Account identifiers to PlayFab identifiers.
+        /// </summary>
+        public List<NintendoServiceAccountPlayFabIdPair> Data;
+    }
+
+    [Serializable]
     public class GetPlayFabIDsFromNintendoSwitchDeviceIdsRequest : PlayFabRequestCommon
     {
         /// <summary>
@@ -3007,7 +3114,7 @@ namespace PlayFab.ServerModels
     public class GetPlayFabIDsFromPSNAccountIDsRequest : PlayFabRequestCommon
     {
         /// <summary>
-        /// Id of the PSN issuer environment. If null, defaults to 256 (production)
+        /// Id of the PSN issuer environment. If null, defaults to production environment.
         /// </summary>
         public int? IssuerId;
         /// <summary>
@@ -3047,6 +3154,27 @@ namespace PlayFab.ServerModels
         /// Mapping of Steam identifiers to PlayFab identifiers.
         /// </summary>
         public List<SteamPlayFabIdPair> Data;
+    }
+
+    [Serializable]
+    public class GetPlayFabIDsFromTwitchIDsRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// Array of unique Twitch identifiers (Twitch's _id) for which the title needs to get PlayFab identifiers.
+        /// </summary>
+        public List<string> TwitchIds;
+    }
+
+    /// <summary>
+    /// For Twitch identifiers which have not been linked to PlayFab accounts, null will be returned.
+    /// </summary>
+    [Serializable]
+    public class GetPlayFabIDsFromTwitchIDsResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// Mapping of Twitch identifiers to PlayFab identifiers.
+        /// </summary>
+        public List<TwitchPlayFabIdPair> Data;
     }
 
     [Serializable]
@@ -3830,7 +3958,7 @@ namespace PlayFab.ServerModels
         /// </summary>
         public bool? ForceLink;
         /// <summary>
-        /// Id of the PSN issuer environment. If null, defaults to 256 (production)
+        /// Id of the PSN issuer environment. If null, defaults to production environment.
         /// </summary>
         public int? IssuerId;
         /// <summary>
@@ -3984,7 +4112,8 @@ namespace PlayFab.ServerModels
         FacebookInstantGames,
         OpenIdConnect,
         Apple,
-        NintendoSwitchAccount
+        NintendoSwitchAccount,
+        GooglePlayGames
     }
 
     [Serializable]
@@ -4010,6 +4139,35 @@ namespace PlayFab.ServerModels
         /// The backend server identifier for this player.
         /// </summary>
         public string ServerCustomId;
+    }
+
+    /// <summary>
+    /// If this is the first time a user has signed in with the Steam ID and CreateAccount is set to true, a new PlayFab account
+    /// will be created and linked to the Steam account. In this case, no email or username will be associated with the PlayFab
+    /// account. Otherwise, if no PlayFab account is linked to the Steam account, an error indicating this will be returned, so
+    /// that the title can guide the user through creation of a PlayFab account. Steam users that are not logged into the Steam
+    /// Client app will only have their Steam username synced, other data, such as currency and country will not be available
+    /// until they login while the Client is open.
+    /// </summary>
+    [Serializable]
+    public class LoginWithSteamIdRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// Automatically create a PlayFab account if one is not currently linked to this ID.
+        /// </summary>
+        public bool? CreateAccount;
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// Flags for which pieces of info to return for the user.
+        /// </summary>
+        public GetPlayerCombinedInfoRequestParams InfoRequestParameters;
+        /// <summary>
+        /// Unique Steam identifier for a user
+        /// </summary>
+        public string SteamId;
     }
 
     /// <summary>
@@ -4267,6 +4425,20 @@ namespace PlayFab.ServerModels
     }
 
     [Serializable]
+    public class NintendoServiceAccountPlayFabIdPair : PlayFabBaseModel
+    {
+        /// <summary>
+        /// Unique Nintendo Switch Service Account identifier for a user.
+        /// </summary>
+        public string NintendoServiceAccountId;
+        /// <summary>
+        /// Unique PlayFab identifier for a user, or null if no PlayFab account is linked to the Nintendo Switch Service Account
+        /// identifier.
+        /// </summary>
+        public string PlayFabId;
+    }
+
+    [Serializable]
     public class NintendoSwitchPlayFabIdPair : PlayFabBaseModel
     {
         /// <summary>
@@ -4501,7 +4673,9 @@ namespace PlayFab.ServerModels
         /// </summary>
         public string DisplayName;
         /// <summary>
-        /// List of experiment variants for the player.
+        /// List of experiment variants for the player. Note that these variants are not guaranteed to be up-to-date when returned
+        /// during login because the player profile is updated only after login. Instead, use the LoginResult.TreatmentAssignment
+        /// property during login to get the correct variants and variables.
         /// </summary>
         public List<string> ExperimentVariants;
         /// <summary>
@@ -5551,6 +5725,10 @@ namespace PlayFab.ServerModels
     public class SetTitleDataRequest : PlayFabRequestCommon
     {
         /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
         /// key we want to set a value on (note, this is additive - will only replace an existing key's value if they are the same
         /// name.) Keys are trimmed of whitespace. Keys may not begin with the '!' character.
         /// </summary>
@@ -5866,6 +6044,19 @@ namespace PlayFab.ServerModels
         /// List of the experiment variants.
         /// </summary>
         public List<string> Variants;
+    }
+
+    [Serializable]
+    public class TwitchPlayFabIdPair : PlayFabBaseModel
+    {
+        /// <summary>
+        /// Unique PlayFab identifier for a user, or null if no PlayFab account is linked to the Twitch identifier.
+        /// </summary>
+        public string PlayFabId;
+        /// <summary>
+        /// Unique Twitch identifier for a user.
+        /// </summary>
+        public string TwitchId;
     }
 
     [Serializable]
@@ -6373,6 +6564,10 @@ namespace PlayFab.ServerModels
         /// </summary>
         public UserGoogleInfo GoogleInfo;
         /// <summary>
+        /// User Google Play Games account information, if a Google Play Games account has been linked
+        /// </summary>
+        public UserGooglePlayGamesInfo GooglePlayGamesInfo;
+        /// <summary>
         /// User iOS device information, if an iOS device has been linked
         /// </summary>
         public UserIosDeviceInfo IosDeviceInfo;
@@ -6420,10 +6615,6 @@ namespace PlayFab.ServerModels
         /// User account name in the PlayFab service
         /// </summary>
         public string Username;
-        /// <summary>
-        /// Windows Hello account information, if a Windows Hello account has been linked
-        /// </summary>
-        public UserWindowsHelloInfo WindowsHelloInfo;
         /// <summary>
         /// User XBox account information, if a XBox account has been linked
         /// </summary>
@@ -6542,6 +6733,23 @@ namespace PlayFab.ServerModels
     }
 
     [Serializable]
+    public class UserGooglePlayGamesInfo : PlayFabBaseModel
+    {
+        /// <summary>
+        /// Avatar image url of the Google Play Games player
+        /// </summary>
+        public string GooglePlayGamesPlayerAvatarImageUrl;
+        /// <summary>
+        /// Display name of the Google Play Games player
+        /// </summary>
+        public string GooglePlayGamesPlayerDisplayName;
+        /// <summary>
+        /// Google Play Games player ID
+        /// </summary>
+        public string GooglePlayGamesPlayerId;
+    }
+
+    [Serializable]
     public class UserIosDeviceInfo : PlayFabBaseModel
     {
         /// <summary>
@@ -6617,13 +6825,13 @@ namespace PlayFab.ServerModels
         XboxLive,
         Parse,
         Twitch,
-        WindowsHello,
         ServerCustomId,
         NintendoSwitchDeviceId,
         FacebookInstantGamesId,
         OpenIdConnect,
         Apple,
-        NintendoSwitchAccount
+        NintendoSwitchAccount,
+        GooglePlayGames
     }
 
     [Serializable]
@@ -6743,25 +6951,16 @@ namespace PlayFab.ServerModels
     }
 
     [Serializable]
-    public class UserWindowsHelloInfo : PlayFabBaseModel
-    {
-        /// <summary>
-        /// Windows Hello Device Name
-        /// </summary>
-        public string WindowsHelloDeviceName;
-        /// <summary>
-        /// Windows Hello Public Key Hash
-        /// </summary>
-        public string WindowsHelloPublicKeyHash;
-    }
-
-    [Serializable]
     public class UserXboxInfo : PlayFabBaseModel
     {
         /// <summary>
         /// XBox user ID
         /// </summary>
         public string XboxUserId;
+        /// <summary>
+        /// XBox user sandbox
+        /// </summary>
+        public string XboxUserSandbox;
     }
 
     [Serializable]

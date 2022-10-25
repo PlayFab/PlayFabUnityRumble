@@ -6,6 +6,28 @@ using PlayFab.SharedModels;
 namespace PlayFab.AuthenticationModels
 {
     /// <summary>
+    /// Delete a game_server entity. The caller can be the game_server entity attempting to delete itself. Or a title entity
+    /// attempting to delete game_server entities for this title.
+    /// </summary>
+    [Serializable]
+    public class DeleteRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The game_server entity to be removed.
+        /// </summary>
+        public EntityKey Entity;
+    }
+
+    [Serializable]
+    public class EmptyResponse : PlayFabResultCommon
+    {
+    }
+
+    /// <summary>
     /// Combined entity type and ID structure which uniquely identifies a single entity.
     /// </summary>
     [Serializable]
@@ -65,7 +87,7 @@ namespace PlayFab.AuthenticationModels
         /// </summary>
         public Dictionary<string,string> CustomTags;
         /// <summary>
-        /// The entity to perform this action on.
+        /// The optional entity to perform this action on. Defaults to the currently logged in entity.
         /// </summary>
         public EntityKey Entity;
     }
@@ -116,7 +138,8 @@ namespace PlayFab.AuthenticationModels
         FacebookInstantGames,
         OpenIdConnect,
         Apple,
-        NintendoSwitchAccount
+        NintendoSwitchAccount,
+        GooglePlayGames
     }
 
     /// <summary>
@@ -150,6 +173,10 @@ namespace PlayFab.AuthenticationModels
         /// The identity provider for this entity, for the given login
         /// </summary>
         public LoginIdentityProvider? IdentityProvider;
+        /// <summary>
+        /// The ID issued by the identity provider, e.g. a XUID on Xbox Live
+        /// </summary>
+        public string IdentityProviderIssuedId;
         /// <summary>
         /// The lineage of this profile.
         /// </summary>
