@@ -24,13 +24,18 @@ namespace PlayFab.Multiplayer.Interop
         public const uint PFLobbyClientRequestedSearchResultCountUpperLimit = 50;
 
 #if !UNITY_2017_1_OR_NEWER
-        [NativeTypeName("const char [12]")]
-        public static ReadOnlySpan<byte> PFLobbyMemberCountSearchKey => new byte[] { 0x6D, 0x65, 0x6D, 0x62, 0x65, 0x72, 0x43, 0x6F, 0x75, 0x6E, 0x74, 0x00 };
+        [NativeTypeName("const char [18]")]
+        public static ReadOnlySpan<byte> PFLobbyMemberCountSearchKey => new byte[] { 0x6C, 0x6F, 0x62, 0x62, 0x79, 0x2F, 0x6D, 0x65, 0x6D, 0x62, 0x65, 0x72, 0x43, 0x6F, 0x75, 0x6E, 0x74, 0x00 };
 #endif
 
 #if !UNITY_2017_1_OR_NEWER
-        [NativeTypeName("const char [9]")]
-        public static ReadOnlySpan<byte> PFLobbyAmMemberSearchKey => new byte[] { 0x61, 0x6D, 0x4D, 0x65, 0x6D, 0x62, 0x65, 0x72, 0x00 };
+        [NativeTypeName("const char [15]")]
+        public static ReadOnlySpan<byte> PFLobbyAmMemberSearchKey => new byte[] { 0x6C, 0x6F, 0x62, 0x62, 0x79, 0x2F, 0x61, 0x6D, 0x4D, 0x65, 0x6D, 0x62, 0x65, 0x72, 0x00 };
+#endif
+
+#if !UNITY_2017_1_OR_NEWER
+        [NativeTypeName("const char [14]")]
+        public static ReadOnlySpan<byte> PFLobbyAmOwnerSearchKey => new byte[] { 0x6C, 0x6F, 0x62, 0x62, 0x79, 0x2F, 0x61, 0x6D, 0x4F, 0x77, 0x6E, 0x65, 0x72, 0x00 };
 #endif
 
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
@@ -83,6 +88,9 @@ namespace PlayFab.Multiplayer.Interop
 
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int PFLobbyGetMemberProperty([NativeTypeName("PFLobbyHandle")] PFLobby* lobby, [NativeTypeName("const PFEntityKey *")] PFEntityKey* member, [NativeTypeName("const char *")] sbyte* key, [NativeTypeName("const char **")] sbyte** value);
+
+        [DllImport(ThunkDllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int PFLobbyGetMemberConnectionStatus([NativeTypeName("PFLobbyHandle")] PFLobby* lobby, [NativeTypeName("const PFEntityKey *")] PFEntityKey* member, PFLobbyMemberConnectionStatus* connectionStatus);
 
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int PFLobbyPostUpdate([NativeTypeName("PFLobbyHandle")] PFLobby* lobby, [NativeTypeName("const PFEntityKey *")] PFEntityKey* localUser, [NativeTypeName("const PFLobbyDataUpdate *")] PFLobbyDataUpdate* lobbyUpdate, [NativeTypeName("const PFLobbyMemberDataUpdate *")] PFLobbyMemberDataUpdate* memberUpdate, void* asyncContext);

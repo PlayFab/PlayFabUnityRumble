@@ -1,0 +1,6 @@
+framework module PlayFabParty {
+  umbrella header "PlayFabParty.h"
+
+  export *
+  module * { export * }
+}

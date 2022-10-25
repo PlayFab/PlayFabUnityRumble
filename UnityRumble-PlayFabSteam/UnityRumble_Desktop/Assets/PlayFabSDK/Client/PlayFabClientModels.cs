@@ -2238,9 +2238,7 @@ namespace PlayFab.ClientModels
     }
 
     /// <summary>
-    /// Note that the Position of the user in the results is for the overall leaderboard. If Facebook friends are included, make
-    /// sure the access token from previous LoginWithFacebook call is still valid and not expired. If Xbox Live friends are
-    /// included, make sure the access token from the previous LoginWithXbox call is still valid and not expired.
+    /// Note: the user's Position is relative to the overall leaderboard.
     /// </summary>
     [Serializable]
     public class GetLeaderboardResult : PlayFabResultCommon
@@ -2723,6 +2721,27 @@ namespace PlayFab.ClientModels
     }
 
     [Serializable]
+    public class GetPlayFabIDsFromGooglePlayGamesPlayerIDsRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// Array of unique Google Play Games identifiers (Google+ user IDs) for which the title needs to get PlayFab identifiers.
+        /// </summary>
+        public List<string> GooglePlayGamesPlayerIDs;
+    }
+
+    /// <summary>
+    /// For Google Play Games identifiers which have not been linked to PlayFab accounts, null will be returned.
+    /// </summary>
+    [Serializable]
+    public class GetPlayFabIDsFromGooglePlayGamesPlayerIDsResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// Mapping of Google Play Games identifiers to PlayFab identifiers.
+        /// </summary>
+        public List<GooglePlayGamesPlayFabIdPair> Data;
+    }
+
+    [Serializable]
     public class GetPlayFabIDsFromKongregateIDsRequest : PlayFabRequestCommon
     {
         /// <summary>
@@ -2741,6 +2760,27 @@ namespace PlayFab.ClientModels
         /// Mapping of Kongregate identifiers to PlayFab identifiers.
         /// </summary>
         public List<KongregatePlayFabIdPair> Data;
+    }
+
+    [Serializable]
+    public class GetPlayFabIDsFromNintendoServiceAccountIdsRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// Array of unique Nintendo Switch Account identifiers for which the title needs to get PlayFab identifiers.
+        /// </summary>
+        public List<string> NintendoAccountIds;
+    }
+
+    /// <summary>
+    /// For Nintendo Service Account identifiers which have not been linked to PlayFab accounts, null will be returned.
+    /// </summary>
+    [Serializable]
+    public class GetPlayFabIDsFromNintendoServiceAccountIdsResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// Mapping of Nintendo Switch Service Account identifiers to PlayFab identifiers.
+        /// </summary>
+        public List<NintendoServiceAccountPlayFabIdPair> Data;
     }
 
     [Serializable]
@@ -3218,6 +3258,19 @@ namespace PlayFab.ClientModels
         public string PlayFabId;
     }
 
+    [Serializable]
+    public class GooglePlayGamesPlayFabIdPair : PlayFabBaseModel
+    {
+        /// <summary>
+        /// Unique Google Play Games identifier for a user.
+        /// </summary>
+        public string GooglePlayGamesPlayerId;
+        /// <summary>
+        /// Unique PlayFab identifier for a user, or null if no PlayFab account is linked to the Google Play Games identifier.
+        /// </summary>
+        public string PlayFabId;
+    }
+
     /// <summary>
     /// Grants a character to the user of the type specified by the item ID. The user must already have an instance of this item
     /// in their inventory in order to allow character creation. This item can come from a purchase or grant, which must be done
@@ -3582,6 +3635,34 @@ namespace PlayFab.ClientModels
     {
     }
 
+    /// <summary>
+    /// Google Play Games sign-in is accomplished by obtaining a Google OAuth 2.0 credential using the Google Play Games sign-in
+    /// for Android APIs on the device and passing it to this API.
+    /// </summary>
+    [Serializable]
+    public class LinkGooglePlayGamesServicesAccountRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// If another user is already linked to the account, unlink the other user and re-link. If the current user is already
+        /// linked, link both accounts
+        /// </summary>
+        public bool? ForceLink;
+        /// <summary>
+        /// OAuth 2.0 server authentication code obtained on the client by calling the requestServerSideAccess()
+        /// (https://developers.google.com/games/services/android/signin) Google Play Games client API.
+        /// </summary>
+        public string ServerAuthCode;
+    }
+
+    [Serializable]
+    public class LinkGooglePlayGamesServicesAccountResult : PlayFabResultCommon
+    {
+    }
+
     [Serializable]
     public class LinkIOSDeviceIDRequest : PlayFabRequestCommon
     {
@@ -3872,7 +3953,8 @@ namespace PlayFab.ClientModels
         FacebookInstantGames,
         OpenIdConnect,
         Apple,
-        NintendoSwitchAccount
+        NintendoSwitchAccount,
+        GooglePlayGames
     }
 
     [Serializable]
@@ -4258,6 +4340,54 @@ namespace PlayFab.ClientModels
         /// <summary>
         /// OAuth 2.0 server authentication code obtained on the client by calling the getServerAuthCode()
         /// (https://developers.google.com/identity/sign-in/android/offline-access) Google client API.
+        /// </summary>
+        public string ServerAuthCode;
+        /// <summary>
+        /// Unique identifier for the title, found in the Settings > Game Properties section of the PlayFab developer site when a
+        /// title has been selected.
+        /// </summary>
+        public string TitleId;
+    }
+
+    /// <summary>
+    /// Google Play Games sign-in is accomplished by obtaining a Google OAuth 2.0 credential using the Google Play Games sign-in
+    /// for Android APIs on the device and passing it to this API. If this is the first time a user has signed in with the
+    /// Google Play Games account and CreateAccount is set to true, a new PlayFab account will be created and linked to the
+    /// Google Play Games account. Otherwise, if no PlayFab account is linked to the Google Play Games account, an error
+    /// indicating this will be returned, so that the title can guide the user through creation of a PlayFab account. The
+    /// current (recommended) method for obtaining a Google Play Games account credential in an Android application is to call
+    /// GamesSignInClient.requestServerSideAccess() and send the auth code as the ServerAuthCode parameter of this API. Before
+    /// doing this, you must create an OAuth 2.0 web application client ID in the Google API Console and configure its client ID
+    /// and secret in the PlayFab Game Manager Google Add-on for your title. This method does not require prompting of the user
+    /// for additional Google account permissions, resulting in a user experience with the least possible friction. For more
+    /// information about obtaining the server auth code, see https://developers.google.com/games/services/android/signin.
+    /// </summary>
+    [Serializable]
+    public class LoginWithGooglePlayGamesServicesRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// Automatically create a PlayFab account if one is not currently linked to this ID.
+        /// </summary>
+        public bool? CreateAccount;
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// Base64 encoded body that is encrypted with the Title's public RSA key (Enterprise Only).
+        /// </summary>
+        public string EncryptedRequest;
+        /// <summary>
+        /// Flags for which pieces of info to return for the user.
+        /// </summary>
+        public GetPlayerCombinedInfoRequestParams InfoRequestParameters;
+        /// <summary>
+        /// Player secret that is used to verify API request signatures (Enterprise Only).
+        /// </summary>
+        public string PlayerSecret;
+        /// <summary>
+        /// OAuth 2.0 server authentication code obtained on the client by calling the requestServerSideAccess()
+        /// (https://developers.google.com/games/services/android/signin) Google Play Games client API.
         /// </summary>
         public string ServerAuthCode;
         /// <summary>
@@ -4869,6 +4999,20 @@ namespace PlayFab.ClientModels
         /// Name Identifier, if present
         /// </summary>
         public string Name;
+    }
+
+    [Serializable]
+    public class NintendoServiceAccountPlayFabIdPair : PlayFabBaseModel
+    {
+        /// <summary>
+        /// Unique Nintendo Switch Service Account identifier for a user.
+        /// </summary>
+        public string NintendoServiceAccountId;
+        /// <summary>
+        /// Unique PlayFab identifier for a user, or null if no PlayFab account is linked to the Nintendo Switch Service Account
+        /// identifier.
+        /// </summary>
+        public string PlayFabId;
     }
 
     [Serializable]
@@ -6383,6 +6527,20 @@ namespace PlayFab.ClientModels
     }
 
     [Serializable]
+    public class UnlinkGooglePlayGamesServicesAccountRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+    }
+
+    [Serializable]
+    public class UnlinkGooglePlayGamesServicesAccountResult : PlayFabResultCommon
+    {
+    }
+
+    [Serializable]
     public class UnlinkIOSDeviceIDRequest : PlayFabRequestCommon
     {
         /// <summary>
@@ -6843,6 +7001,10 @@ namespace PlayFab.ClientModels
         /// </summary>
         public UserGoogleInfo GoogleInfo;
         /// <summary>
+        /// User Google Play Games account information, if a Google Play Games account has been linked
+        /// </summary>
+        public UserGooglePlayGamesInfo GooglePlayGamesInfo;
+        /// <summary>
         /// User iOS device information, if an iOS device has been linked
         /// </summary>
         public UserIosDeviceInfo IosDeviceInfo;
@@ -7008,6 +7170,23 @@ namespace PlayFab.ClientModels
     }
 
     [Serializable]
+    public class UserGooglePlayGamesInfo : PlayFabBaseModel
+    {
+        /// <summary>
+        /// Avatar image url of the Google Play Games player
+        /// </summary>
+        public string GooglePlayGamesPlayerAvatarImageUrl;
+        /// <summary>
+        /// Display name of the Google Play Games player
+        /// </summary>
+        public string GooglePlayGamesPlayerDisplayName;
+        /// <summary>
+        /// Google Play Games player ID
+        /// </summary>
+        public string GooglePlayGamesPlayerId;
+    }
+
+    [Serializable]
     public class UserIosDeviceInfo : PlayFabBaseModel
     {
         /// <summary>
@@ -7088,7 +7267,8 @@ namespace PlayFab.ClientModels
         FacebookInstantGamesId,
         OpenIdConnect,
         Apple,
-        NintendoSwitchAccount
+        NintendoSwitchAccount,
+        GooglePlayGames
     }
 
     [Serializable]
@@ -7214,6 +7394,10 @@ namespace PlayFab.ClientModels
         /// XBox user ID
         /// </summary>
         public string XboxUserId;
+        /// <summary>
+        /// XBox user sandbox
+        /// </summary>
+        public string XboxUserSandbox;
     }
 
     [Serializable]

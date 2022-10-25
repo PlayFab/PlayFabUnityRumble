@@ -41,8 +41,9 @@ namespace PlayFab.Multiplayer.InteropWrapper
         {
             unsafe
             {
-                this.Id = Converters.PtrToStringUTF8((IntPtr)interopStruct->id);
-                this.Type = Converters.PtrToStringUTF8((IntPtr)interopStruct->type);
+                // interopStruct may be null from this call: LeaveAllLocalUsers()
+                this.Id = interopStruct == null ? this.Id : Converters.PtrToStringUTF8((IntPtr)interopStruct->id);
+                this.Type = interopStruct == null ? this.Type : Converters.PtrToStringUTF8((IntPtr)interopStruct->type);
             }
         }
 

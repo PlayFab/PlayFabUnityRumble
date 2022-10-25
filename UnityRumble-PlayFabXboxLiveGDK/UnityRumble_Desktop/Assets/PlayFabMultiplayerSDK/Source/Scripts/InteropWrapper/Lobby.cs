@@ -224,7 +224,7 @@ namespace PlayFab.Multiplayer.InteropWrapper
             PFEntityKey localUser,
             object asyncIdentifier)
         {
-            if (localUser == null || lobby == null)
+            if (lobby == null)
             {
                 return LobbyError.InvalidArg;
             }
@@ -239,9 +239,10 @@ namespace PlayFab.Multiplayer.InteropWrapper
             {
                 unsafe
                 {
+                    var ptrLocalUser = localUser == null ? null : localUser.ToPointer(disposableCollection);
                     int err = Methods.PFLobbyLeave(
                         lobby.InteropHandle,
-                        localUser.ToPointer(disposableCollection),
+                        ptrLocalUser,
                         asyncId.ToPointer());
                     if (LobbyError.FAILED(err))
                     {
@@ -435,6 +436,32 @@ namespace PlayFab.Multiplayer.InteropWrapper
                 }
             }
         }
+
+        public static int PFLobbyGetMemberConnectionStatus(
+            PFLobbyHandle lobby,
+            PFEntityKey member,
+            out PFLobbyMemberConnectionStatus memberConnectionStatus)
+        {
+            memberConnectionStatus = PFLobbyMemberConnectionStatus.NotConnected;
+            if (lobby == null || member == null)
+            {
+                return LobbyError.InvalidArg;
+            }
+
+            unsafe
+            {
+                using (var disposableCollection = new DisposableCollection())
+                {
+                    Interop.PFLobbyMemberConnectionStatus connectionStatus;
+                    int err = Methods.PFLobbyGetMemberConnectionStatus(
+                        lobby.InteropHandle,
+                        member.ToPointer(disposableCollection),
+                        &connectionStatus);
+                    memberConnectionStatus = (PFLobbyMemberConnectionStatus)connectionStatus;
+                    return err;
+                }
+            }
+        }        
 
         public static int PFLobbyPostUpdate(
             PFLobbyHandle lobby,

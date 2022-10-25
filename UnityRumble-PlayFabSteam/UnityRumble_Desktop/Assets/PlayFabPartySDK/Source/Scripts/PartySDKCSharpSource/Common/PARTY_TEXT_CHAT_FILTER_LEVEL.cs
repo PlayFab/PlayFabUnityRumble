@@ -1,0 +1,19 @@
+﻿using System;
+using PartyCSharpSDK.Interop;
+
+namespace PartyCSharpSDK
+{
+    //typedef enum PARTY_TEXT_CHAT_FILTER_LEVEL
+    //{
+        // PARTY_TEXT_CHAT_FILTER_LEVEL_FAMILY_FRIENDLY = 0,
+        // PARTY_TEXT_CHAT_FILTER_LEVEL_MEDIUM = 1,
+        // PARTY_TEXT_CHAT_FILTER_LEVEL_MATURE = 2,
+    //}
+    //PARTY_TEXT_CHAT_FILTER_LEVEL;
+    public enum PARTY_TEXT_CHAT_FILTER_LEVEL : UInt32
+    {
+        PARTY_TEXT_CHAT_FILTER_LEVEL_FAMILY_FRIENDLY = 0,
+        PARTY_TEXT_CHAT_FILTER_LEVEL_MEDIUM = 1,
+        PARTY_TEXT_CHAT_FILTER_LEVEL_MATURE = 2,
+    }
+}

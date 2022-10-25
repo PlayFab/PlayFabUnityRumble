@@ -507,6 +507,27 @@ namespace PartyCSharpSDK
             return PFPInterop.PartyGetThreadAffinityMask(threadId, out threadAffinityMask);
         }
 
+        public static UInt32 PartySetWorkMode(
+            PARTY_THREAD_ID threadId,
+            PARTY_WORK_MODE workMode)
+        {
+            return PFPInterop.PartySetWorkMode(threadId, workMode);
+        }
+
+        public static UInt32 PartyGetWorkMode(
+            PARTY_THREAD_ID threadId,
+            out PARTY_WORK_MODE workMode)
+        {
+            return PFPInterop.PartyGetWorkMode(threadId, out workMode);
+        }
+
+        public static UInt32 PartyDoWork(
+            PARTY_HANDLE handle,
+            PARTY_THREAD_ID threadId)
+        {
+            return PFPInterop.PartyDoWork(handle.InteropHandle, threadId);
+        }
+
         public static UInt32 PartyGetChatControls(
             PARTY_HANDLE handle,
             out PARTY_CHAT_CONTROL_HANDLE[] chatControls)
@@ -1272,6 +1293,16 @@ namespace PartyCSharpSDK
             }
 
             return err;
+        }
+
+        public static UInt32 PartyNetworkGetDeviceConnectionType(
+            PARTY_NETWORK_HANDLE network,
+            PARTY_DEVICE_HANDLE targetDevice,
+            out PARTY_DEVICE_CONNECTION_TYPE deviceConnectionType)
+        {
+            return PFPInterop.PartyNetworkGetDeviceConnectionType(network.InteropHandle,
+                                                                  targetDevice.InteropHandle,
+                                                                  out deviceConnectionType);
         }
 
         // PartyEndpoint

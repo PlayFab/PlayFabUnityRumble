@@ -19,5 +19,8 @@ namespace PlayFab.Multiplayer.Interop
 
         [NativeTypeName("const char *")]
         public sbyte* lobbyArrangementString;
+
+        [NativeTypeName("const PFMultiplayerServerDetails *")]
+        public PFMultiplayerServerDetails* serverDetails;
     }
 }

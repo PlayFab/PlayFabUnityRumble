@@ -81,7 +81,11 @@ namespace PlayFab.Internal
                 yield return request.Send();
 #endif
 
+#if UNITY_2020_1_OR_NEWER
+                if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+#else
                 if (request.isNetworkError || request.isHttpError)
+#endif
                 {
                     errorCallback(request.error);
                 }
@@ -89,6 +93,8 @@ namespace PlayFab.Internal
                 {
                     successCallback(request.downloadHandler.data);
                 }
+
+                request.Dispose();
             }
         }
 
@@ -96,24 +102,6 @@ namespace PlayFab.Internal
         {
             CallRequestContainer reqContainer = (CallRequestContainer)reqContainerObj;
             reqContainer.RequestHeaders["Content-Type"] = "application/json";
-
-#if !UNITY_WSA && !UNITY_WP8 && !UNITY_WEBGL
-            if (PlayFabSettings.CompressApiData)
-            {
-                reqContainer.RequestHeaders["Content-Encoding"] = "GZIP";
-                reqContainer.RequestHeaders["Accept-Encoding"] = "GZIP";
-
-                using (var stream = new MemoryStream())
-                {
-                    using (var zipstream = new Ionic.Zlib.GZipStream(stream, Ionic.Zlib.CompressionMode.Compress,
-                        Ionic.Zlib.CompressionLevel.BestCompression))
-                    {
-                        zipstream.Write(reqContainer.Payload, 0, reqContainer.Payload.Length);
-                    }
-                    reqContainer.Payload = stream.ToArray();
-                }
-            }
-#endif
 
             // Start the www corouting to Post, and get a response or error which is then passed to the callbacks.
             PlayFabHttp.instance.StartCoroutine(Post(reqContainer));
@@ -126,84 +114,57 @@ namespace PlayFab.Internal
             var startTime = DateTime.UtcNow;
 #endif
 
-            var www = new UnityWebRequest(reqContainer.FullUrl)
+            using (var www = new UnityWebRequest(reqContainer.FullUrl)
             {
                 uploadHandler = new UploadHandlerRaw(reqContainer.Payload),
                 downloadHandler = new DownloadHandlerBuffer(),
                 method = "POST"
-            };
-
-            foreach (var headerPair in reqContainer.RequestHeaders)
+            })
             {
-                if (!string.IsNullOrEmpty(headerPair.Key) && !string.IsNullOrEmpty(headerPair.Value))
-                    www.SetRequestHeader(headerPair.Key, headerPair.Value);
-                else
-                    Debug.LogWarning("Null header: " + headerPair.Key + " = " + headerPair.Value);
-            }
-
-#if UNITY_2017_2_OR_NEWER
-            yield return www.SendWebRequest();
-#else
-            yield return www.Send();
-#endif
-
-#if PLAYFAB_REQUEST_TIMING
-            stopwatch.Stop();
-            var timing = new PlayFabHttp.RequestTiming {
-                StartTimeUtc = startTime,
-                ApiEndpoint = reqContainer.ApiEndpoint,
-                WorkerRequestMs = (int)stopwatch.ElapsedMilliseconds,
-                MainThreadRequestMs = (int)stopwatch.ElapsedMilliseconds
-            };
-            PlayFabHttp.SendRequestTiming(timing);
-#endif
-
-            if (!string.IsNullOrEmpty(www.error))
-            {
-                OnError(www.error, reqContainer);
-            }
-            else
-            {
-                try
+                foreach (var headerPair in reqContainer.RequestHeaders)
                 {
-                    byte[] responseBytes = www.downloadHandler.data;
-                    bool isGzipCompressed = responseBytes != null && responseBytes[0] == 31 && responseBytes[1] == 139;
-                    string responseText = "Unexpected error: cannot decompress GZIP stream.";
-                    if (!isGzipCompressed && responseBytes != null)
-                        responseText = System.Text.Encoding.UTF8.GetString(responseBytes, 0, responseBytes.Length);
-#if !UNITY_WSA && !UNITY_WP8 && !UNITY_WEBGL
-                    if (isGzipCompressed)
-                    {
-                        var stream = new MemoryStream(responseBytes);
-                        using (var gZipStream = new Ionic.Zlib.GZipStream(stream, Ionic.Zlib.CompressionMode.Decompress, false))
-                        {
-                            var buffer = new byte[4096];
-                            using (var output = new MemoryStream())
-                            {
-                                int read;
-                                while ((read = gZipStream.Read(buffer, 0, buffer.Length)) > 0)
-                                    output.Write(buffer, 0, read);
-                                output.Seek(0, SeekOrigin.Begin);
-                                var streamReader = new StreamReader(output);
-                                var jsonResponse = streamReader.ReadToEnd();
-                                //Debug.Log(jsonResponse);
-                                OnResponse(jsonResponse, reqContainer);
-                                //Debug.Log("Successful UnityHttp decompress for: " + www.url);
-                            }
-                        }
-                    }
+                    if (!string.IsNullOrEmpty(headerPair.Key) && !string.IsNullOrEmpty(headerPair.Value))
+                        www.SetRequestHeader(headerPair.Key, headerPair.Value);
                     else
-#endif
+                        Debug.LogWarning("Null header: " + headerPair.Key + " = " + headerPair.Value);
+                }
+
+    #if UNITY_2017_2_OR_NEWER
+                yield return www.SendWebRequest();
+    #else
+                yield return www.Send();
+    #endif
+
+    #if PLAYFAB_REQUEST_TIMING
+                stopwatch.Stop();
+                var timing = new PlayFabHttp.RequestTiming {
+                    StartTimeUtc = startTime,
+                    ApiEndpoint = reqContainer.ApiEndpoint,
+                    WorkerRequestMs = (int)stopwatch.ElapsedMilliseconds,
+                    MainThreadRequestMs = (int)stopwatch.ElapsedMilliseconds
+                };
+                PlayFabHttp.SendRequestTiming(timing);
+    #endif
+
+                if (!string.IsNullOrEmpty(www.error))
+                {
+                    OnError(www.error, reqContainer);
+                }
+                else
+                {
+                    try
                     {
+                        byte[] responseBytes = www.downloadHandler.data;
+                        string responseText = System.Text.Encoding.UTF8.GetString(responseBytes, 0, responseBytes.Length);
                         OnResponse(responseText, reqContainer);
                     }
+                    catch (Exception e)
+                    {
+                        OnError("Unhandled error in PlayFabUnityHttp: " + e, reqContainer);
+                    }
                 }
-                catch (Exception e)
-                {
-                    OnError("Unhandled error in PlayFabUnityHttp: " + e, reqContainer);
-                }
-            }
-            www.Dispose();
+                www.Dispose();
+            };
         }
 
         public int GetPendingMessages()

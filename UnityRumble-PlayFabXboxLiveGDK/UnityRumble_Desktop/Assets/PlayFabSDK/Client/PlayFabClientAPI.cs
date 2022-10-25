@@ -214,6 +214,20 @@ namespace PlayFab
         }
 
         /// <summary>
+        /// Checks for any new consumable entitlements. If any are found, they are consumed (if they're consumables) and added as
+        /// PlayFab items
+        /// </summary>
+        public static void ConsumePS5Entitlements(ConsumePS5EntitlementsRequest request, Action<ConsumePS5EntitlementsResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
+        {
+            var context = (request == null ? null : request.AuthenticationContext) ?? PlayFabSettings.staticPlayer;
+            var callSettings = PlayFabSettings.staticSettings;
+            if (!context.IsClientLoggedIn()) throw new PlayFabException(PlayFabExceptionCode.NotLoggedIn,"Must be logged in to call this method");
+
+
+            PlayFabHttp.MakeApiCall("/Client/ConsumePS5Entitlements", request, AuthType.LoginSession, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
+        }
+
+        /// <summary>
         /// Checks for any new consumable entitlements. If any are found, they are consumed and added as PlayFab items
         /// </summary>
         public static void ConsumePSNEntitlements(ConsumePSNEntitlementsRequest request, Action<ConsumePSNEntitlementsResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
@@ -257,7 +271,8 @@ namespace PlayFab
         }
 
         /// <summary>
-        /// Executes a CloudScript function, with the 'currentPlayerId' set to the PlayFab ID of the authenticated player.
+        /// Executes a CloudScript function, with the 'currentPlayerId' set to the PlayFab ID of the authenticated player. The
+        /// PlayFab ID is the entity ID of the player's master_player_account entity.
         /// </summary>
         public static void ExecuteCloudScript(ExecuteCloudScriptRequest request, Action<ExecuteCloudScriptResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
         {
@@ -737,6 +752,21 @@ namespace PlayFab
         }
 
         /// <summary>
+        /// Retrieves the unique PlayFab identifiers for the given set of Google Play Games identifiers. The Google Play Games
+        /// identifiers are the IDs for the user accounts, available as "playerId" in the Google Play Games Services - Players API
+        /// calls.
+        /// </summary>
+        public static void GetPlayFabIDsFromGooglePlayGamesPlayerIDs(GetPlayFabIDsFromGooglePlayGamesPlayerIDsRequest request, Action<GetPlayFabIDsFromGooglePlayGamesPlayerIDsResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
+        {
+            var context = (request == null ? null : request.AuthenticationContext) ?? PlayFabSettings.staticPlayer;
+            var callSettings = PlayFabSettings.staticSettings;
+            if (!context.IsClientLoggedIn()) throw new PlayFabException(PlayFabExceptionCode.NotLoggedIn,"Must be logged in to call this method");
+
+
+            PlayFabHttp.MakeApiCall("/Client/GetPlayFabIDsFromGooglePlayGamesPlayerIDs", request, AuthType.LoginSession, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
+        }
+
+        /// <summary>
         /// Retrieves the unique PlayFab identifiers for the given set of Kongregate identifiers. The Kongregate identifiers are the
         /// IDs for the user accounts, available as "user_id" from the Kongregate API methods(ex:
         /// http://developers.kongregate.com/docs/client/getUserId).
@@ -752,7 +782,20 @@ namespace PlayFab
         }
 
         /// <summary>
-        /// Retrieves the unique PlayFab identifiers for the given set of Nintendo Switch identifiers.
+        /// Retrieves the unique PlayFab identifiers for the given set of Nintendo Service Account identifiers.
+        /// </summary>
+        public static void GetPlayFabIDsFromNintendoServiceAccountIds(GetPlayFabIDsFromNintendoServiceAccountIdsRequest request, Action<GetPlayFabIDsFromNintendoServiceAccountIdsResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
+        {
+            var context = (request == null ? null : request.AuthenticationContext) ?? PlayFabSettings.staticPlayer;
+            var callSettings = PlayFabSettings.staticSettings;
+            if (!context.IsClientLoggedIn()) throw new PlayFabException(PlayFabExceptionCode.NotLoggedIn,"Must be logged in to call this method");
+
+
+            PlayFabHttp.MakeApiCall("/Client/GetPlayFabIDsFromNintendoServiceAccountIds", request, AuthType.LoginSession, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
+        }
+
+        /// <summary>
+        /// Retrieves the unique PlayFab identifiers for the given set of Nintendo Switch Device identifiers.
         /// </summary>
         public static void GetPlayFabIDsFromNintendoSwitchDeviceIds(GetPlayFabIDsFromNintendoSwitchDeviceIdsRequest request, Action<GetPlayFabIDsFromNintendoSwitchDeviceIdsResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
         {
@@ -765,7 +808,7 @@ namespace PlayFab
         }
 
         /// <summary>
-        /// Retrieves the unique PlayFab identifiers for the given set of PlayStation Network identifiers.
+        /// Retrieves the unique PlayFab identifiers for the given set of PlayStation :tm: Network identifiers.
         /// </summary>
         public static void GetPlayFabIDsFromPSNAccountIDs(GetPlayFabIDsFromPSNAccountIDsRequest request, Action<GetPlayFabIDsFromPSNAccountIDsResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
         {
@@ -1005,18 +1048,6 @@ namespace PlayFab
         }
 
         /// <summary>
-        /// Requests a challenge from the server to be signed by Windows Hello Passport service to authenticate.
-        /// </summary>
-        public static void GetWindowsHelloChallenge(GetWindowsHelloChallengeRequest request, Action<GetWindowsHelloChallengeResponse> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
-        {
-            var context = (request == null ? null : request.AuthenticationContext) ?? PlayFabSettings.staticPlayer;
-            var callSettings = PlayFabSettings.staticSettings;
-
-
-            PlayFabHttp.MakeApiCall("/Client/GetWindowsHelloChallenge", request, AuthType.None, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
-        }
-
-        /// <summary>
         /// Grants the specified character type to the user. CharacterIds are not globally unique; characterId must be evaluated
         /// with the parent PlayFabId to guarantee uniqueness.
         /// </summary>
@@ -1096,7 +1127,10 @@ namespace PlayFab
         }
 
         /// <summary>
-        /// Links the Game Center account associated with the provided Game Center ID to the user's PlayFab account
+        /// Links the Game Center account associated with the provided Game Center ID to the user's PlayFab account. Logging in with
+        /// a Game Center ID is insecure if you do not include the optional PublicKeyUrl, Salt, Signature, and Timestamp parameters
+        /// in this request. It is recommended you require these parameters on all Game Center calls by going to the Apple Add-ons
+        /// page in the PlayFab Game Manager and enabling the 'Require secure authentication only for this app' option.
         /// </summary>
         public static void LinkGameCenterAccount(LinkGameCenterAccountRequest request, Action<LinkGameCenterAccountResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
         {
@@ -1119,6 +1153,20 @@ namespace PlayFab
 
 
             PlayFabHttp.MakeApiCall("/Client/LinkGoogleAccount", request, AuthType.LoginSession, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
+        }
+
+        /// <summary>
+        /// Links the currently signed-in user account to their Google Play Games account, using their Google Play Games account
+        /// credentials
+        /// </summary>
+        public static void LinkGooglePlayGamesServicesAccount(LinkGooglePlayGamesServicesAccountRequest request, Action<LinkGooglePlayGamesServicesAccountResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
+        {
+            var context = (request == null ? null : request.AuthenticationContext) ?? PlayFabSettings.staticPlayer;
+            var callSettings = PlayFabSettings.staticSettings;
+            if (!context.IsClientLoggedIn()) throw new PlayFabException(PlayFabExceptionCode.NotLoggedIn,"Must be logged in to call this method");
+
+
+            PlayFabHttp.MakeApiCall("/Client/LinkGooglePlayGamesServicesAccount", request, AuthType.LoginSession, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
         }
 
         /// <summary>
@@ -1188,7 +1236,7 @@ namespace PlayFab
         }
 
         /// <summary>
-        /// Links the PlayStation Network account associated with the provided access code to the user's PlayFab account
+        /// Links the PlayStation :tm: Network account associated with the provided access code to the user's PlayFab account
         /// </summary>
         public static void LinkPSNAccount(LinkPSNAccountRequest request, Action<LinkPSNAccountResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
         {
@@ -1224,19 +1272,6 @@ namespace PlayFab
 
 
             PlayFabHttp.MakeApiCall("/Client/LinkTwitch", request, AuthType.LoginSession, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
-        }
-
-        /// <summary>
-        /// Link Windows Hello authentication to the current PlayFab Account
-        /// </summary>
-        public static void LinkWindowsHello(LinkWindowsHelloAccountRequest request, Action<LinkWindowsHelloAccountResponse> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
-        {
-            var context = (request == null ? null : request.AuthenticationContext) ?? PlayFabSettings.staticPlayer;
-            var callSettings = PlayFabSettings.staticSettings;
-            if (!context.IsClientLoggedIn()) throw new PlayFabException(PlayFabExceptionCode.NotLoggedIn,"Must be logged in to call this method");
-
-
-            PlayFabHttp.MakeApiCall("/Client/LinkWindowsHello", request, AuthType.LoginSession, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
         }
 
         /// <summary>
@@ -1339,7 +1374,10 @@ namespace PlayFab
 
         /// <summary>
         /// Signs the user in using an iOS Game Center player identifier, returning a session identifier that can subsequently be
-        /// used for API calls which require an authenticated user
+        /// used for API calls which require an authenticated user. Logging in with a Game Center ID is insecure if you do not
+        /// include the optional PublicKeyUrl, Salt, Signature, and Timestamp parameters in this request. It is recommended you
+        /// require these parameters on all Game Center calls by going to the Apple Add-ons page in the PlayFab Game Manager and
+        /// enabling the 'Require secure authentication only for this app' option.
         /// </summary>
         public static void LoginWithGameCenter(LoginWithGameCenterRequest request, Action<LoginResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
         {
@@ -1362,6 +1400,19 @@ namespace PlayFab
 
 
             PlayFabHttp.MakeApiCall("/Client/LoginWithGoogleAccount", request, AuthType.None, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
+        }
+
+        /// <summary>
+        /// Signs the user in using their Google Play Games account credentials
+        /// </summary>
+        public static void LoginWithGooglePlayGamesServices(LoginWithGooglePlayGamesServicesRequest request, Action<LoginResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
+        {
+            var context = (request == null ? null : request.AuthenticationContext) ?? PlayFabSettings.staticPlayer;
+            var callSettings = PlayFabSettings.staticSettings;
+            request.TitleId = request.TitleId ?? callSettings.TitleId;
+
+
+            PlayFabHttp.MakeApiCall("/Client/LoginWithGooglePlayGamesServices", request, AuthType.None, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
         }
 
         /// <summary>
@@ -1449,8 +1500,8 @@ namespace PlayFab
         }
 
         /// <summary>
-        /// Signs the user in using a PlayStation Network authentication code, returning a session identifier that can subsequently
-        /// be used for API calls which require an authenticated user
+        /// Signs the user in using a PlayStation :tm: Network authentication code, returning a session identifier that can
+        /// subsequently be used for API calls which require an authenticated user
         /// </summary>
         public static void LoginWithPSN(LoginWithPSNRequest request, Action<LoginResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
         {
@@ -1487,22 +1538,6 @@ namespace PlayFab
 
 
             PlayFabHttp.MakeApiCall("/Client/LoginWithTwitch", request, AuthType.None, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
-        }
-
-        /// <summary>
-        /// Completes the Windows Hello login flow by returning the signed value of the challange from GetWindowsHelloChallenge.
-        /// Windows Hello has a 2 step client to server authentication scheme. Step one is to request from the server a challenge
-        /// string. Step two is to request the user sign the string via Windows Hello and then send the signed value back to the
-        /// server.
-        /// </summary>
-        public static void LoginWithWindowsHello(LoginWithWindowsHelloRequest request, Action<LoginResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
-        {
-            var context = (request == null ? null : request.AuthenticationContext) ?? PlayFabSettings.staticPlayer;
-            var callSettings = PlayFabSettings.staticSettings;
-            request.TitleId = request.TitleId ?? callSettings.TitleId;
-
-
-            PlayFabHttp.MakeApiCall("/Client/LoginWithWindowsHello", request, AuthType.None, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
         }
 
         /// <summary>
@@ -1592,7 +1627,7 @@ namespace PlayFab
         }
 
         /// <summary>
-        /// Uses the supplied OAuth code to refresh the internally cached player PSN auth token
+        /// Uses the supplied OAuth code to refresh the internally cached player PSN :tm: auth token
         /// </summary>
         public static void RefreshPSNAuthToken(RefreshPSNAuthTokenRequest request, Action<EmptyResponse> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
         {
@@ -1629,20 +1664,6 @@ namespace PlayFab
 
 
             PlayFabHttp.MakeApiCall("/Client/RegisterPlayFabUser", request, AuthType.None, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
-        }
-
-        /// <summary>
-        /// Registers a new PlayFab user account using Windows Hello authentication, returning a session ticket that can
-        /// subsequently be used for API calls which require an authenticated user
-        /// </summary>
-        public static void RegisterWithWindowsHello(RegisterWithWindowsHelloRequest request, Action<LoginResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
-        {
-            var context = (request == null ? null : request.AuthenticationContext) ?? PlayFabSettings.staticPlayer;
-            var callSettings = PlayFabSettings.staticSettings;
-            request.TitleId = request.TitleId ?? callSettings.TitleId;
-
-
-            PlayFabHttp.MakeApiCall("/Client/RegisterWithWindowsHello", request, AuthType.None, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
         }
 
         /// <summary>
@@ -1809,19 +1830,6 @@ namespace PlayFab
         }
 
         /// <summary>
-        /// Start a new game server with a given configuration, add the current player and return the connection information.
-        /// </summary>
-        public static void StartGame(StartGameRequest request, Action<StartGameResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
-        {
-            var context = (request == null ? null : request.AuthenticationContext) ?? PlayFabSettings.staticPlayer;
-            var callSettings = PlayFabSettings.staticSettings;
-            if (!context.IsClientLoggedIn()) throw new PlayFabException(PlayFabExceptionCode.NotLoggedIn,"Must be logged in to call this method");
-
-
-            PlayFabHttp.MakeApiCall("/Client/StartGame", request, AuthType.LoginSession, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
-        }
-
-        /// <summary>
         /// Creates an order for a list of items from the title catalog
         /// </summary>
         public static void StartPurchase(StartPurchaseRequest request, Action<StartPurchaseResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
@@ -1941,6 +1949,19 @@ namespace PlayFab
         }
 
         /// <summary>
+        /// Unlinks the related Google Play Games account from the user's PlayFab account.
+        /// </summary>
+        public static void UnlinkGooglePlayGamesServicesAccount(UnlinkGooglePlayGamesServicesAccountRequest request, Action<UnlinkGooglePlayGamesServicesAccountResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
+        {
+            var context = (request == null ? null : request.AuthenticationContext) ?? PlayFabSettings.staticPlayer;
+            var callSettings = PlayFabSettings.staticSettings;
+            if (!context.IsClientLoggedIn()) throw new PlayFabException(PlayFabExceptionCode.NotLoggedIn,"Must be logged in to call this method");
+
+
+            PlayFabHttp.MakeApiCall("/Client/UnlinkGooglePlayGamesServicesAccount", request, AuthType.LoginSession, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
+        }
+
+        /// <summary>
         /// Unlinks the related iOS device identifier from the user's PlayFab account
         /// </summary>
         public static void UnlinkIOSDeviceID(UnlinkIOSDeviceIDRequest request, Action<UnlinkIOSDeviceIDResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
@@ -2007,7 +2028,7 @@ namespace PlayFab
         }
 
         /// <summary>
-        /// Unlinks the related PSN account from the user's PlayFab account
+        /// Unlinks the related PSN :tm: account from the user's PlayFab account
         /// </summary>
         public static void UnlinkPSNAccount(UnlinkPSNAccountRequest request, Action<UnlinkPSNAccountResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
         {
@@ -2043,19 +2064,6 @@ namespace PlayFab
 
 
             PlayFabHttp.MakeApiCall("/Client/UnlinkTwitch", request, AuthType.LoginSession, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
-        }
-
-        /// <summary>
-        /// Unlink Windows Hello authentication from the current PlayFab Account
-        /// </summary>
-        public static void UnlinkWindowsHello(UnlinkWindowsHelloAccountRequest request, Action<UnlinkWindowsHelloAccountResponse> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
-        {
-            var context = (request == null ? null : request.AuthenticationContext) ?? PlayFabSettings.staticPlayer;
-            var callSettings = PlayFabSettings.staticSettings;
-            if (!context.IsClientLoggedIn()) throw new PlayFabException(PlayFabExceptionCode.NotLoggedIn,"Must be logged in to call this method");
-
-
-            PlayFabHttp.MakeApiCall("/Client/UnlinkWindowsHello", request, AuthType.LoginSession, resultCallback, errorCallback, customData, extraHeaders, context, callSettings);
         }
 
         /// <summary>

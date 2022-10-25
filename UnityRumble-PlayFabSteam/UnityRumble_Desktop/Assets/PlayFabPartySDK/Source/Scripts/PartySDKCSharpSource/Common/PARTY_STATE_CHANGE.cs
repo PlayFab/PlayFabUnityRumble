@@ -1144,6 +1144,9 @@ namespace PartyCSharpSDK
                 stateChangeConverted.translations,
                 stateChangeConverted.translationCount,
                 (x) => new PARTY_TRANSLATION(x));
+            this.options = stateChangeConverted.options;
+            this.originalChatText = Converters.PtrToStringUTF8(stateChangeConverted.originalChatText);
+            this.errorDetail = stateChangeConverted.errorDetail;
         }
 
         public PARTY_CHAT_CONTROL_HANDLE senderChatControl { get; }
@@ -1152,6 +1155,9 @@ namespace PartyCSharpSDK
         public string chatText { get; }
         public Byte[] data { get; }
         public PARTY_TRANSLATION[] translations { get; }
+        public PARTY_CHAT_TEXT_RECEIVED_OPTIONS options { get; }
+        public string originalChatText { get; }
+        public UInt32 errorDetail { get; }
     }
 
     public class PARTY_SET_CHAT_AUDIO_ENCODER_BITRATE_COMPLETED_STATE_CHANGE : PARTY_STATE_CHANGE

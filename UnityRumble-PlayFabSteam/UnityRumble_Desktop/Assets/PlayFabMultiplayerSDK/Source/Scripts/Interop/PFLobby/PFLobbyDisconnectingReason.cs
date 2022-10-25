@@ -5,5 +5,6 @@ namespace PlayFab.Multiplayer.Interop
     {
         NoLocalMembers = 0,
         LobbyDeleted = 1,
+        ConnectionInterruption = 2,
     }
 }

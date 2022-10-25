@@ -8,7 +8,7 @@ namespace PartyCSharpSDK.Interop
 #if (UNITY_GAMECORE || MICROSOFT_GAME_CORE) && !UNITY_EDITOR
         const string ThunkDllName = "PartyWin";
 #elif UNITY_SWITCH && !UNITY_EDITOR
-        const string ThunkDllName = "__Internal";
+        const string ThunkDllName = "Party";
 #elif UNITY_IOS && !UNITY_EDITOR
         const string ThunkDllName = "__Internal";
 #elif UNITY_ANDROID && !UNITY_EDITOR
@@ -17,6 +17,8 @@ namespace PartyCSharpSDK.Interop
         const string ThunkDllName = "Party.prx";
 #elif UNITY_PS5 && !UNITY_EDITOR
         const string ThunkDllName = "Party.prx";
+#elif (UNITY_STANDALONE_LINUX || UNITY_EDITOR_LINUX)
+        const string ThunkDllName = "party";
 #else
         const string ThunkDllName = "PartyWin32";
 #endif
@@ -248,6 +250,24 @@ namespace PartyCSharpSDK.Interop
             PARTY_THREAD_ID threadId,
             UInt64 threadAffinityMask);
 
+        //PartySetWorkMode(
+        //    PARTY_THREAD_ID threadId,
+        //    PARTY_WORK_MODE workMode
+        //    );
+        [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
+        internal static extern UInt32 PartySetWorkMode(
+            PARTY_THREAD_ID threadId,
+            PARTY_WORK_MODE workMode);
+
+        //PartyDoWork(
+        //    PARTY_HANDLE handle,
+        //    PARTY_THREAD_ID threadId
+        //    );
+        [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
+        internal static extern UInt32 PartyDoWork(
+            PARTY_HANDLE handle,
+            PARTY_THREAD_ID threadId);
+
         //PartyGetOption(
         //    _In_opt_ const void* object,
         //    PARTY_OPTION option,
@@ -285,6 +305,15 @@ namespace PartyCSharpSDK.Interop
         internal static extern UInt32 PartyGetThreadAffinityMask(
             PARTY_THREAD_ID threadId,
             out UInt64 threadAffinityMask);
+
+        //PartyGetWorkMode(
+        //    PARTY_THREAD_ID threadId,
+        //    _Out_ PARTY_WORK_MODE * workMode
+        //    );
+        [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
+        internal static extern UInt32 PartyGetWorkMode(
+            PARTY_THREAD_ID threadId,
+            out PARTY_WORK_MODE workMode);
 
         //PartyStartProcessingStateChanges(
         //    PARTY_HANDLE handle,

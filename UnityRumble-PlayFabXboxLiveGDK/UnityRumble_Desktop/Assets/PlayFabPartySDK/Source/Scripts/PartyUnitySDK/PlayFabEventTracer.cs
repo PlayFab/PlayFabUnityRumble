@@ -119,35 +119,16 @@ namespace PlayFab.Party
         {
             WaitForSeconds delay = new WaitForSeconds(secondsBetweenWait);
 
-            while (true)
+            while (entityKey.Id == null)
             {
                 if (PlayFabAuthenticationAPI.IsEntityLoggedIn())
                 {
-                    if (entityKey.Id == null)
-                    {
-                        AuthenticationModels.GetEntityTokenRequest request = new AuthenticationModels.GetEntityTokenRequest();
-                        PlayFabAuthenticationAPI.GetEntityToken(request, GetEntityTokenCompleted, GetEntityTokenFailed);
-                    }
+                    entityKey.Id = PlayFab.PlayFabSettings.staticPlayer.EntityId;
+                    entityKey.Type = PlayFab.PlayFabSettings.staticPlayer.EntityType;
                     break;
                 }
                 yield return delay;
             }
-        }
-
-        /// <summary>
-        /// A coroutine to wait until we get an Entity Id after PlayFabLogin
-        /// </summary>
-        /// <param name="response">server response</param>
-        private void GetEntityTokenCompleted(AuthenticationModels.GetEntityTokenResponse response)
-        {
-            entityKey.Id = response.Entity.Id;
-            entityKey.Type = response.Entity.Type;
-        }
-        private void GetEntityTokenFailed(PlayFabError error)
-        {
-            eventsPending.Clear();
-            eventsRequests.Clear();
-            Debug.LogWarning("Failed to get Entity token. Error: " + error.ErrorMessage);
         }
 
         /// <summary>

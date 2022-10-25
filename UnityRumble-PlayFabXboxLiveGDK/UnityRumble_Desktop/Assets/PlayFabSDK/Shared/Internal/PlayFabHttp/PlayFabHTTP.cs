@@ -184,7 +184,7 @@ namespace PlayFab.Internal
             reqContainer.RequestHeaders["X-PlayFabSDK"] = PlayFabSettings.VersionString; // Tell PlayFab which SDK this is
             switch (authType)
             {
-#if ENABLE_PLAYFABSERVER_API || ENABLE_PLAYFABADMIN_API || UNITY_EDITOR
+#if ENABLE_PLAYFABSERVER_API || ENABLE_PLAYFABADMIN_API || UNITY_EDITOR || ENABLE_PLAYFAB_SECRETKEY
                 case AuthType.DevSecretKey:
                     if (apiSettings.DeveloperSecretKey == null) throw new PlayFabException(PlayFabExceptionCode.DeveloperKeyNotSet, "DeveloperSecretKey is not found in Request, Server Instance or PlayFabSettings");
                     reqContainer.RequestHeaders["X-SecretKey"] = apiSettings.DeveloperSecretKey; break;
@@ -237,11 +237,13 @@ namespace PlayFab.Internal
             var result = reqContainer.ApiResult;
 
 #if !DISABLE_PLAYFABENTITY_API
+
             var entRes = result as AuthenticationModels.GetEntityTokenResponse;
             if (entRes != null)
             {
                 PlayFabSettings.staticPlayer.EntityToken = entRes.EntityToken;
             }
+
 #endif
 #if !DISABLE_PLAYFABCLIENT_API
             var logRes = result as ClientModels.LoginResult;
@@ -405,7 +407,8 @@ namespace PlayFab.Internal
                 Error = errorDict != null && errorDict.ContainsKey("errorCode") ? (PlayFabErrorCode)Convert.ToInt32(errorDict["errorCode"]) : PlayFabErrorCode.ServiceUnavailable,
                 ErrorMessage = errorDict != null && errorDict.ContainsKey("errorMessage") ? (string)errorDict["errorMessage"] : json,
                 ErrorDetails = errorDetails,
-                CustomData = customData
+                CustomData = customData,
+                RetryAfterSeconds = errorDict != null && errorDict.ContainsKey("retryAfterSeconds") ? Convert.ToUInt32(errorDict["retryAfterSeconds"]) : (uint?)null,
             };
         }
 

@@ -389,6 +389,9 @@ namespace PartyCSharpSDK.Interop
         internal readonly IntPtr data;
         internal readonly UInt32 translationCount;
         internal readonly IntPtr translations;
+        internal readonly PARTY_CHAT_TEXT_RECEIVED_OPTIONS options;
+        internal readonly IntPtr originalChatText;
+        internal readonly UInt32 errorDetail;
     }
 
     [StructLayout(LayoutKind.Sequential)]

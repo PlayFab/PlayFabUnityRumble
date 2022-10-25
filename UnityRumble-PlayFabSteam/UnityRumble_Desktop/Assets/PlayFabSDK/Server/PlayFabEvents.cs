@@ -93,12 +93,16 @@ namespace PlayFab.Events
         public event PlayFabResultEvent<GetPlayFabIDsFromFacebookInstantGamesIdsResult> OnServerGetPlayFabIDsFromFacebookInstantGamesIdsResultEvent;
         public event PlayFabRequestEvent<GetPlayFabIDsFromGenericIDsRequest> OnServerGetPlayFabIDsFromGenericIDsRequestEvent;
         public event PlayFabResultEvent<GetPlayFabIDsFromGenericIDsResult> OnServerGetPlayFabIDsFromGenericIDsResultEvent;
+        public event PlayFabRequestEvent<GetPlayFabIDsFromNintendoServiceAccountIdsRequest> OnServerGetPlayFabIDsFromNintendoServiceAccountIdsRequestEvent;
+        public event PlayFabResultEvent<GetPlayFabIDsFromNintendoServiceAccountIdsResult> OnServerGetPlayFabIDsFromNintendoServiceAccountIdsResultEvent;
         public event PlayFabRequestEvent<GetPlayFabIDsFromNintendoSwitchDeviceIdsRequest> OnServerGetPlayFabIDsFromNintendoSwitchDeviceIdsRequestEvent;
         public event PlayFabResultEvent<GetPlayFabIDsFromNintendoSwitchDeviceIdsResult> OnServerGetPlayFabIDsFromNintendoSwitchDeviceIdsResultEvent;
         public event PlayFabRequestEvent<GetPlayFabIDsFromPSNAccountIDsRequest> OnServerGetPlayFabIDsFromPSNAccountIDsRequestEvent;
         public event PlayFabResultEvent<GetPlayFabIDsFromPSNAccountIDsResult> OnServerGetPlayFabIDsFromPSNAccountIDsResultEvent;
         public event PlayFabRequestEvent<GetPlayFabIDsFromSteamIDsRequest> OnServerGetPlayFabIDsFromSteamIDsRequestEvent;
         public event PlayFabResultEvent<GetPlayFabIDsFromSteamIDsResult> OnServerGetPlayFabIDsFromSteamIDsResultEvent;
+        public event PlayFabRequestEvent<GetPlayFabIDsFromTwitchIDsRequest> OnServerGetPlayFabIDsFromTwitchIDsRequestEvent;
+        public event PlayFabResultEvent<GetPlayFabIDsFromTwitchIDsResult> OnServerGetPlayFabIDsFromTwitchIDsResultEvent;
         public event PlayFabRequestEvent<GetPlayFabIDsFromXboxLiveIDsRequest> OnServerGetPlayFabIDsFromXboxLiveIDsRequestEvent;
         public event PlayFabResultEvent<GetPlayFabIDsFromXboxLiveIDsResult> OnServerGetPlayFabIDsFromXboxLiveIDsResultEvent;
         public event PlayFabRequestEvent<GetPublisherDataRequest> OnServerGetPublisherDataRequestEvent;
@@ -175,6 +179,8 @@ namespace PlayFab.Events
         public event PlayFabResultEvent<RedeemMatchmakerTicketResult> OnServerRedeemMatchmakerTicketResultEvent;
         public event PlayFabRequestEvent<RefreshGameServerInstanceHeartbeatRequest> OnServerRefreshGameServerInstanceHeartbeatRequestEvent;
         public event PlayFabResultEvent<RefreshGameServerInstanceHeartbeatResult> OnServerRefreshGameServerInstanceHeartbeatResultEvent;
+        public event PlayFabRequestEvent<RegisterGameRequest> OnServerRegisterGameRequestEvent;
+        public event PlayFabResultEvent<RegisterGameResponse> OnServerRegisterGameResultEvent;
         public event PlayFabRequestEvent<RemoveFriendRequest> OnServerRemoveFriendRequestEvent;
         public event PlayFabResultEvent<EmptyResponse> OnServerRemoveFriendResultEvent;
         public event PlayFabRequestEvent<RemoveGenericIDRequest> OnServerRemoveGenericIDRequestEvent;

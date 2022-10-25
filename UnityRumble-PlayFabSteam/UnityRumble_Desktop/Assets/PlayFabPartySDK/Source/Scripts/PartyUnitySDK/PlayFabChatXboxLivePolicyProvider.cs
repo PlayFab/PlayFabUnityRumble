@@ -34,11 +34,14 @@ using PartyCSharpSDK;
 using PartyXBLCSharpSDK;
 using PlayFab.ClientModels;
 
-#if UNITY_GAMECORE && !MICROSOFT_GAME_CORE
+#if UNITY_GAMECORE
+using UnityEngine.GameCore;
 using Unity.GameCore;
+using XGR = Unity.GameCore;
 #endif
 #if MICROSOFT_GAME_CORE
 using XGamingRuntime;
+using XGR = XGamingRuntime;
 #endif
 
 #if BUILD_XBL_PLUGIN
@@ -131,13 +134,7 @@ namespace PlayFab.Party._Internal
 
             try
             {
-#if UNITY_GAMECORE && !MICROSOFT_GAME_CORE
-    Unity.GameCore.
-#endif
-#if MICROSOFT_GAME_CORE
-    XGamingRuntime.
-#endif
-                SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserSilently, SignInSilentlyComplete);
+                XGR.SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserSilently, SignInSilentlyComplete);
             }
             catch (NullReferenceException)
             {
@@ -157,14 +154,7 @@ namespace PlayFab.Party._Internal
             {
                 ulong xuid;
 #if (MICROSOFT_GAME_CORE || UNITY_GAMECORE)
-                if (HrSucceeded(
-#if UNITY_GAMECORE && !MICROSOFT_GAME_CORE
-    Unity.GameCore.
-#endif
-#if MICROSOFT_GAME_CORE
-    XGamingRuntime.
-#endif
-                    SDK.XUserGetId(_xblLocalUserHandle, out xuid)))
+                if (HrSucceeded(XGR.SDK.XUserGetId(_xblLocalUserHandle, out xuid)))
 #endif
                 {
                     player._platformSpecificUserId = xuid.ToString();
@@ -190,15 +180,17 @@ namespace PlayFab.Party._Internal
             return chatPermissions;
         }
 
-        public void ProcessEndpointMessage(PlayFabPlayer fromPlayer, IntPtr messageBuffer, uint messageSize)
+        public void ProcessEndpointMessage(PlayFabPlayer fromPlayer, IntPtr messageBuffer, uint messageSize, out bool isInternalMessage)
         {
+            isInternalMessage = false;
             // Another client asks for our client's XUID
             if (messageSize > 0 &&
                 messageSize < _INTERNAL_XUID_EXCHANGE_MESSAGE_BUFFER_SIZE)
             {
                 Marshal.Copy(messageBuffer, _internalXuidExchangeMessageBuffer, 0, (int)messageSize);
-                if (StartsWithSequence(_internalXuidExchangeMessageBuffer, _XUID_EXCHANGE_REQUEST_AS_BYTES))
+                if (_multiplayerManager._StartsWithSequence(_internalXuidExchangeMessageBuffer, _XUID_EXCHANGE_REQUEST_AS_BYTES))
                 {
+                    isInternalMessage = true;
                     PlayFabMultiplayerManager._LogInfo("PlayFabChatXboxLivePolicyProvider: received remote XUID.");
 
                     // Find the other client and set their XIUD
@@ -274,14 +266,7 @@ namespace PlayFab.Party._Internal
             // Broadcast XUID to other endpoints in the network.
             ulong xuid;
 #if (MICROSOFT_GAME_CORE || UNITY_GAMECORE)
-            if (HrSucceeded(
-#if UNITY_GAMECORE && !MICROSOFT_GAME_CORE
-    Unity.GameCore.
-#endif
-#if MICROSOFT_GAME_CORE
-    XGamingRuntime.
-#endif
-                SDK.XUserGetId(_xblLocalUserHandle, out xuid)))
+            if (HrSucceeded(XGR.SDK.XUserGetId(_xblLocalUserHandle, out xuid)))
 #endif
             {
                 string xuidMessageString = _XUID_EXCHANGE_REQUEST_MESSAGE_PREFIX + ":" + xuid;
@@ -359,13 +344,7 @@ namespace PlayFab.Party._Internal
                                     body = null;
                                 }
 #if (MICROSOFT_GAME_CORE || UNITY_GAMECORE)
-#if UNITY_GAMECORE && !MICROSOFT_GAME_CORE
-    Unity.GameCore.
-#endif
-#if MICROSOFT_GAME_CORE
-    XGamingRuntime.
-#endif
-                                    SDK.XUserGetTokenAndSignatureUtf16Async(
+                                XGR.SDK.XUserGetTokenAndSignatureUtf16Async(
                                         _xblLocalUserHandle,
                                         options,
                                         stateChangeConverted.method,
@@ -493,16 +472,14 @@ namespace PlayFab.Party._Internal
                 ));
 
             var permissionsQuery = chatPermissionInfo.ChatPermissionMask;
-            if (permissionsQuery != _CHAT_PERMISSIONS_ALL)
+            bool mute = permissionsQuery != _CHAT_PERMISSIONS_ALL;
+            foreach (var playerKeyPair in _multiplayerManager.RemotePlayers)
             {
-                foreach (var playerKeyPair in _multiplayerManager.RemotePlayers)
+                if (playerKeyPair.EntityKey.Id == targetPlayer.EntityKey.Id)
                 {
-                    if (playerKeyPair.EntityKey.Id == targetPlayer.EntityKey.Id)
-                    {
-                        playerKeyPair._mutedByPlatform = true;
-                        playerKeyPair.IsMuted = true;
-                        break;
-                    }
+                    playerKeyPair._mutedByPlatform = mute;
+                    playerKeyPair.IsMuted = mute;
+                    break;
                 }
             }
             if (!_playerChatPermissions.ContainsKey(targetPlayer))
@@ -537,14 +514,7 @@ namespace PlayFab.Party._Internal
             ulong xuid;
             int hr = 0;
 #if (MICROSOFT_GAME_CORE || UNITY_GAMECORE)
-            hr =
-#if UNITY_GAMECORE && !MICROSOFT_GAME_CORE
-    Unity.GameCore.
-#endif
-#if MICROSOFT_GAME_CORE
-    XGamingRuntime.
-#endif
-                SDK.XUserGetId(_xblLocalUserHandle, out xuid);
+            hr = XGR.SDK.XUserGetId(_xblLocalUserHandle, out xuid);
 #endif
 
             PlayFabMultiplayerManager._LogInfo("PlayFabChatXboxLivePolicyProvider:SignInSilentlyComplete(), XUID: " + xuid);
@@ -652,27 +622,6 @@ namespace PlayFab.Party._Internal
             return hresult >= 0;
         }
 
-        private bool StartsWithSequence(byte[] buffer, byte[] sequence)
-        {
-            bool startsWithSequence = true;
-            if (buffer.Length > sequence.Length + 1)
-            {
-                for (int i = 0; i < sequence.Length; i++)
-                {
-                    if (buffer[i] != sequence[i])
-                    {
-                        startsWithSequence = false;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                startsWithSequence = false;
-            }
-            return startsWithSequence;
-        }
-
         private class PlayerComparator : IEqualityComparer<PlayFabPlayer>
         {
             public bool Equals(PlayFabPlayer a, PlayFabPlayer b)
@@ -713,13 +662,7 @@ namespace PlayFab.Party._Internal
                 {
                     // We need to resolve
 #if (MICROSOFT_GAME_CORE || UNITY_GAMECORE)
-#if UNITY_GAMECORE && !MICROSOFT_GAME_CORE
-                    Unity.GameCore.
-#endif
-#if MICROSOFT_GAME_CORE
-                    XGamingRuntime.
-#endif
-                        SDK.XUserResolveIssueWithUiUtf16Async(
+                    XGR.SDK.XUserResolveIssueWithUiUtf16Async(
                             Get()._xblLocalUserHandle,
                             url,
                             _ResolveUserIssueWithUICompleted

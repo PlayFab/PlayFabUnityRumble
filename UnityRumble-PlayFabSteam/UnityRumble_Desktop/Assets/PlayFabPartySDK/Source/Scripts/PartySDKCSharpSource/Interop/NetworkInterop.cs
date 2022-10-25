@@ -5,14 +5,14 @@ namespace PartyCSharpSDK.Interop
 {
     partial class PFPInterop
     {
-        //PartyNetworkSetProperties(
+        //PartyNetworkSetSharedProperties(
         //    PARTY_NETWORK_HANDLE network,
         //    uint32_t propertyCount,
         //    _In_reads_(propertyCount) const PartyString* keys,
         //    _In_reads_(propertyCount) const PARTY_DATA_BUFFER* values
         //    );
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
-        internal static extern UInt32 PartyNetworkSetProperties(
+        internal static extern UInt32 PartyNetworkSetSharedProperties(
             PARTY_NETWORK_HANDLE network,
             UInt32 propertyCount,
             [In] UTF8StringPtr[] keys,
@@ -131,13 +131,13 @@ namespace PartyCSharpSDK.Interop
             Byte[] targetEntityId,
             IntPtr asyncIdentifier);
 
-        //PartyNetworkGetPropertyKeys(
+        //PartyNetworkGetSharedPropertyKeys(
         //    PARTY_NETWORK_HANDLE network,
         //    _Out_ uint32_t* propertyCount,
         //    _Outptr_result_buffer_(*propertyCount) const PartyString** keys
         //    );
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
-        unsafe internal static extern UInt32 PartyNetworkGetPropertyKeys(
+        unsafe internal static extern UInt32 PartyNetworkGetSharedPropertyKeys(
             PARTY_NETWORK_HANDLE network,
             out UInt32 propertyCount,
             out UTF8StringPtr* keys);
@@ -202,9 +202,9 @@ namespace PartyCSharpSDK.Interop
         //PartyNetworkCreateEndpoint(
         //    PARTY_NETWORK_HANDLE network,
         //    _In_opt_ PARTY_LOCAL_USER_HANDLE localUser,
-        //    uint32_t propertyCount,
-        //    _In_reads_opt_(propertyCount) const PartyString* keys,
-        //    _In_reads_opt_(propertyCount) const PARTY_DATA_BUFFER* values,
+        //    uint32_t sharedPropertyCount,
+        //    _In_reads_opt_(sharedPropertyCount) const PartyString* keys,
+        //    _In_reads_opt_(sharedPropertyCount) const PARTY_DATA_BUFFER* values,
         //    _In_opt_ void* asyncIdentifier,
         //    _Outptr_opt_ PARTY_ENDPOINT_HANDLE* endpoint
         //    );
@@ -212,7 +212,7 @@ namespace PartyCSharpSDK.Interop
         internal static extern UInt32 PartyNetworkCreateEndpoint(
             PARTY_NETWORK_HANDLE network,
             PARTY_LOCAL_USER_HANDLE localUser,
-            UInt32 propertyCount,
+            UInt32 sharedPropertyCount,
             IntPtr keys,
             IntPtr values,
             IntPtr asyncIdentifier,
@@ -240,13 +240,13 @@ namespace PartyCSharpSDK.Interop
             out UInt32 endpointCount,
             out IntPtr endpoints);
 
-        //PartyNetworkGetProperty(
+        //PartyNetworkGetSharedProperty(
         //    PARTY_NETWORK_HANDLE network,
         //    PartyString key,
         //    _Outptr_result_maybenull_ const PARTY_DATA_BUFFER** value
         //    );
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
-        unsafe internal static extern UInt32 PartyNetworkGetProperty(
+        unsafe internal static extern UInt32 PartyNetworkGetSharedProperty(
             PARTY_NETWORK_HANDLE network,
             Byte[] key,
             out PARTY_DATA_BUFFER* value);
@@ -307,5 +307,16 @@ namespace PartyCSharpSDK.Interop
             PARTY_LOCAL_USER_HANDLE localUser,
             Byte[] invitationIdentifier,
             IntPtr asyncIdentifier);
+                
+        //PartyNetworkGetDeviceConnectionType(
+        //    PARTY_NETWORK_HANDLE network,
+        //    PARTY_DEVICE_HANDLE targetDevice,
+        //    out PARTY_DEVICE_CONNECTION_TYPE deviceConnectionType
+        //    );
+        [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
+        internal static extern UInt32 PartyNetworkGetDeviceConnectionType(
+            PARTY_NETWORK_HANDLE network,
+            PARTY_DEVICE_HANDLE targetDevice,
+            out PARTY_DEVICE_CONNECTION_TYPE deviceConnectionType);
     }
 }

@@ -46,6 +46,10 @@ namespace PlayFab.Multiplayer.InteropWrapper
 
             this.RegionPreferences = Converters.StringPtrToArray(interopStruct->regionPreferences, interopStruct->regionPreferenceCount);
             this.LobbyArrangementString = Converters.PtrToStringUTF8((IntPtr)interopStruct->lobbyArrangementString);
+            if (interopStruct->serverDetails != null)
+            {
+                this.ServerDetails = new PFMultiplayerServerDetails(interopStruct->serverDetails);
+            }
         }
 
         public string MatchId { get; set; }
@@ -55,5 +59,7 @@ namespace PlayFab.Multiplayer.InteropWrapper
         public string[] RegionPreferences { get; set; }
 
         public string LobbyArrangementString { get; set; }
+
+        public PFMultiplayerServerDetails ServerDetails { get; }
     }
 }

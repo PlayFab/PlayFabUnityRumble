@@ -1780,6 +1780,31 @@ namespace PlayFab.AdminModels
         public string JobReceiptId;
     }
 
+    /// <summary>
+    /// Request must contain the Segment ID
+    /// </summary>
+    [Serializable]
+    public class ExportPlayersInSegmentRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// Unique identifier of the requested segment.
+        /// </summary>
+        public string SegmentId;
+    }
+
+    [Serializable]
+    public class ExportPlayersInSegmentResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// Unique identifier of the export for the requested Segment.
+        /// </summary>
+        public string ExportId;
+        /// <summary>
+        /// Unique identifier of the requested Segment.
+        /// </summary>
+        public string SegmentId;
+    }
+
     [Serializable]
     public class FirstLoginDateSegmentFilter : PlayFabBaseModel
     {
@@ -2365,6 +2390,14 @@ namespace PlayFab.AdminModels
         NoValidIdentityForAad,
         PlayerIdentityLinkNotFound,
         PhotonApplicationIdAlreadyInUse,
+        CloudScriptUnableToDeleteProductionRevision,
+        CustomIdNotFound,
+        AutomationInvalidInput,
+        AutomationInvalidRuleName,
+        AutomationRuleAlreadyExists,
+        AutomationRuleLimitExceeded,
+        InvalidGooglePlayGamesServerAuthCode,
+        StorageAccountNotFound,
         MatchmakingEntityInvalid,
         MatchmakingPlayerAttributesInvalid,
         MatchmakingQueueNotFound,
@@ -2432,6 +2465,7 @@ namespace PlayFab.AdminModels
         ExportCannotParseQuery,
         ExportControlCommandsNotAllowed,
         ExportQueryMissingTableReference,
+        ExportInsightsV1Deprecated,
         ExplorerBasicInvalidQueryName,
         ExplorerBasicInvalidQueryDescription,
         ExplorerBasicInvalidQueryConditions,
@@ -2512,6 +2546,15 @@ namespace PlayFab.AdminModels
         EventSinkConnectionInvalid,
         EventSinkConnectionUnauthorized,
         EventSinkRegionInvalid,
+        EventSinkLimitExceeded,
+        EventSinkSasTokenInvalid,
+        EventSinkNotFound,
+        EventSinkNameInvalid,
+        EventSinkSasTokenPermissionInvalid,
+        EventSinkSecretInvalid,
+        EventSinkTenantNotFound,
+        EventSinkAadNotFound,
+        EventSinkDatabaseNotFound,
         OperationCanceled,
         InvalidDisplayNameRandomSuffixLength,
         AllowNonUniquePlayerDisplayNamesDisableNotAllowed
@@ -2911,6 +2954,31 @@ namespace PlayFab.AdminModels
     }
 
     /// <summary>
+    /// Request must contain the ExportId
+    /// </summary>
+    [Serializable]
+    public class GetPlayersInSegmentExportRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// Unique identifier of the export for the requested Segment.
+        /// </summary>
+        public string ExportId;
+    }
+
+    [Serializable]
+    public class GetPlayersInSegmentExportResponse : PlayFabResultCommon
+    {
+        /// <summary>
+        /// Url from which the index file can be downloaded.
+        /// </summary>
+        public string IndexUrl;
+        /// <summary>
+        /// Shows the current status of the export
+        /// </summary>
+        public string State;
+    }
+
+    /// <summary>
     /// Initial request must contain at least a Segment ID. Subsequent requests must contain the Segment ID as well as the
     /// Continuation Token. Failure to send the Continuation Token will result in a new player segment list being generated.
     /// Each time the Continuation Token is passed in the length of the Total Seconds to Live is refreshed. If too much time
@@ -3179,61 +3247,6 @@ namespace PlayFab.AdminModels
         /// List of title segments.
         /// </summary>
         public List<SegmentModel> Segments;
-    }
-
-    [Serializable]
-    public class GetServerBuildInfoRequest : PlayFabRequestCommon
-    {
-        /// <summary>
-        /// unique identifier of the previously uploaded build executable for which information is being requested
-        /// </summary>
-        public string BuildId;
-    }
-
-    /// <summary>
-    /// Information about a particular server build
-    /// </summary>
-    [Serializable]
-    public class GetServerBuildInfoResult : PlayFabResultCommon
-    {
-        /// <summary>
-        /// array of regions where this build can used, when it is active
-        /// </summary>
-        public List<Region> ActiveRegions;
-        /// <summary>
-        /// unique identifier for this build executable
-        /// </summary>
-        public string BuildId;
-        /// <summary>
-        /// developer comment(s) for this build
-        /// </summary>
-        public string Comment;
-        /// <summary>
-        /// error message, if any, about this build
-        /// </summary>
-        public string ErrorMessage;
-        /// <summary>
-        /// maximum number of game server instances that can run on a single host machine
-        /// </summary>
-        public int MaxGamesPerHost;
-        /// <summary>
-        /// minimum capacity of additional game server instances that can be started before the autoscaling service starts new host
-        /// machines (given the number of current running host machines and game server instances)
-        /// </summary>
-        public int MinFreeGameSlots;
-        /// <summary>
-        /// the current status of the build validation and processing steps
-        /// </summary>
-        public GameBuildStatus? Status;
-        /// <summary>
-        /// time this build was last modified (or uploaded, if this build has never been modified)
-        /// </summary>
-        public DateTime Timestamp;
-        /// <summary>
-        /// Unique identifier for the title, found in the Settings > Game Properties section of the PlayFab developer site when a
-        /// title has been selected.
-        /// </summary>
-        public string TitleId;
     }
 
     /// <summary>
@@ -3898,20 +3911,6 @@ namespace PlayFab.AdminModels
     }
 
     [Serializable]
-    public class ListBuildsRequest : PlayFabRequestCommon
-    {
-    }
-
-    [Serializable]
-    public class ListBuildsResult : PlayFabResultCommon
-    {
-        /// <summary>
-        /// array of uploaded game server builds
-        /// </summary>
-        public List<GetServerBuildInfoResult> Builds;
-    }
-
-    [Serializable]
     public class ListOpenIdConnectionRequest : PlayFabRequestCommon
     {
     }
@@ -3995,7 +3994,8 @@ namespace PlayFab.AdminModels
         FacebookInstantGames,
         OpenIdConnect,
         Apple,
-        NintendoSwitchAccount
+        NintendoSwitchAccount,
+        GooglePlayGames
     }
 
     [Serializable]
@@ -4841,20 +4841,6 @@ namespace PlayFab.AdminModels
 
     [Serializable]
     public class RemovePlayerTagResult : PlayFabResultCommon
-    {
-    }
-
-    [Serializable]
-    public class RemoveServerBuildRequest : PlayFabRequestCommon
-    {
-        /// <summary>
-        /// unique identifier of the previously uploaded build executable to be removed
-        /// </summary>
-        public string BuildId;
-    }
-
-    [Serializable]
-    public class RemoveServerBuildResult : PlayFabResultCommon
     {
     }
 
@@ -5994,6 +5980,10 @@ namespace PlayFab.AdminModels
     public class SetTitleDataAndOverridesRequest : PlayFabRequestCommon
     {
         /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
         /// List of titleData key-value pairs to set/delete. Use an empty value to delete an existing key; use a non-empty value to
         /// create/update a key.
         /// </summary>
@@ -6028,11 +6018,6 @@ namespace PlayFab.AdminModels
         /// name.) Keys are trimmed of whitespace. Keys may not begin with the '!' character.
         /// </summary>
         public string Key;
-        /// <summary>
-        /// Unique identifier for the title, found in the Settings > Game Properties section of the PlayFab developer site when a
-        /// title has been selected.
-        /// </summary>
-        public string TitleId;
         /// <summary>
         /// new value to set. Set to null to remove a value
         /// </summary>
@@ -6477,9 +6462,11 @@ namespace PlayFab.AdminModels
     }
 
     /// <summary>
-    /// This operation is not additive. Using it will cause the indicated catalog version to be created from scratch. If there
-    /// is an existing catalog with the version number in question, it will be deleted and replaced with only the items
-    /// specified in this call.
+    /// When used for SetCatalogItems, this operation is not additive. Using it will cause the indicated catalog version to be
+    /// created from scratch. If there is an existing catalog with the version number in question, it will be deleted and
+    /// replaced with only the items specified in this call. When used for UpdateCatalogItems, this operation is additive. Items
+    /// with ItemId values not currently in the catalog will be added, while those with ItemId values matching items currently
+    /// in the catalog will overwrite those items with the given values.
     /// </summary>
     [Serializable]
     public class UpdateCatalogItemsRequest : PlayFabRequestCommon
@@ -6730,16 +6717,19 @@ namespace PlayFab.AdminModels
     }
 
     /// <summary>
-    /// This operation is not additive. Using it will cause the indicated virtual store to be created from scratch. If there is
-    /// an existing store with the same storeId, it will be deleted and replaced with only the items specified in this call. A
-    /// store contains an array of references to items defined inthe catalog, along with the prices for the item, in both real
-    /// world and virtual currencies. These prices act as an override to any prices defined in the catalog. In this way, the
-    /// base definitions of the items may be defined in the catalog, with all associated properties, while the pricing can be
-    /// set for each store, as needed. This allows for subsets of goods to be defined for different purposes (in order to
-    /// simplify showing some, but not all catalog items to users, based upon different characteristics), along with unique
-    /// prices. Note that all prices defined in the catalog and store definitions for the item are considered valid, and that a
-    /// compromised client can be made to send a request for an item based upon any of these definitions. If no price is
-    /// specified in the store for an item, the price set in the catalog should be displayed to the user.
+    /// When used for SetStoreItems, this operation is not additive. Using it will cause the indicated virtual store to be
+    /// created from scratch. If there is an existing store with the same storeId, it will be deleted and replaced with only the
+    /// items specified in this call. When used for UpdateStoreItems, this operation is additive. Items with ItemId values not
+    /// currently in the store will be added, while those with ItemId values matching items currently in the catalog will
+    /// overwrite those items with the given values. In both cases, a store contains an array of references to items defined in
+    /// the catalog, along with the prices for the item, in both real world and virtual currencies. These prices act as an
+    /// override to any prices defined in the catalog. In this way, the base definitions of the items may be defined in the
+    /// catalog, with all associated properties, while the pricing can be set for each store, as needed. This allows for subsets
+    /// of goods to be defined for different purposes (in order to simplify showing some, but not all catalog items to users,
+    /// based upon different characteristics), along with unique prices. Note that all prices defined in the catalog and store
+    /// definitions for the item are considered valid, and that a compromised client can be made to send a request for an item
+    /// based upon any of these definitions. If no price is specified in the store for an item, the price set in the catalog
+    /// should be displayed to the user.
     /// </summary>
     [Serializable]
     public class UpdateStoreItemsRequest : PlayFabRequestCommon
@@ -6951,6 +6941,10 @@ namespace PlayFab.AdminModels
         /// </summary>
         public UserGoogleInfo GoogleInfo;
         /// <summary>
+        /// User Google Play Games account information, if a Google Play Games account has been linked
+        /// </summary>
+        public UserGooglePlayGamesInfo GooglePlayGamesInfo;
+        /// <summary>
         /// User iOS device information, if an iOS device has been linked
         /// </summary>
         public UserIosDeviceInfo IosDeviceInfo;
@@ -7116,6 +7110,23 @@ namespace PlayFab.AdminModels
     }
 
     [Serializable]
+    public class UserGooglePlayGamesInfo : PlayFabBaseModel
+    {
+        /// <summary>
+        /// Avatar image url of the Google Play Games player
+        /// </summary>
+        public string GooglePlayGamesPlayerAvatarImageUrl;
+        /// <summary>
+        /// Display name of the Google Play Games player
+        /// </summary>
+        public string GooglePlayGamesPlayerDisplayName;
+        /// <summary>
+        /// Google Play Games player ID
+        /// </summary>
+        public string GooglePlayGamesPlayerId;
+    }
+
+    [Serializable]
     public class UserIosDeviceInfo : PlayFabBaseModel
     {
         /// <summary>
@@ -7196,7 +7207,8 @@ namespace PlayFab.AdminModels
         FacebookInstantGamesId,
         OpenIdConnect,
         Apple,
-        NintendoSwitchAccount
+        NintendoSwitchAccount,
+        GooglePlayGames
     }
 
     [Serializable]
@@ -7314,6 +7326,10 @@ namespace PlayFab.AdminModels
         /// XBox user ID
         /// </summary>
         public string XboxUserId;
+        /// <summary>
+        /// XBox user sandbox
+        /// </summary>
+        public string XboxUserSandbox;
     }
 
     [Serializable]

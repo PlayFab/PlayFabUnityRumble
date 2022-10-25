@@ -90,13 +90,13 @@ namespace PartyCSharpSDK.Interop
             PARTY_ENDPOINT_HANDLE endpoint,
             out IntPtr customContext);
 
-        //PartyEndpointGetPropertyKeys(
+        //PartyEndpointGetSharedPropertyKeys(
         //    PARTY_ENDPOINT_HANDLE endpoint,
         //    _Out_ uint32_t* propertyCount,
         //    _Outptr_result_buffer_(*propertyCount) const PartyString** keys
         //    );
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
-        unsafe internal static extern UInt32 PartyEndpointGetPropertyKeys(
+        unsafe internal static extern UInt32 PartyEndpointGetSharedPropertyKeys(
             PARTY_ENDPOINT_HANDLE endpoint,
             out UInt32 propertyCount,
             out UTF8StringPtr* keys);
@@ -127,13 +127,13 @@ namespace PartyCSharpSDK.Interop
             PARTY_ENDPOINT_STATISTIC[] statisticTypes,
             UInt64[] statisticValues);
 
-        //PartyEndpointGetProperty(
+        //PartyEndpointGetSharedProperty(
         //    PARTY_ENDPOINT_HANDLE endpoint,
         //    PartyString key,
-        //    _Outptr_result_maybenull_ const PARTY_DATA_BUFFER** value
+        //    _Out_ PARTY_DATA_BUFFER* value
         //    );
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
-        unsafe internal static extern UInt32 PartyEndpointGetProperty(
+        unsafe internal static extern UInt32 PartyEndpointGetSharedProperty(
             PARTY_ENDPOINT_HANDLE endpoint,
             Byte[] key,
             out PARTY_DATA_BUFFER* value);
@@ -167,14 +167,14 @@ namespace PartyCSharpSDK.Interop
             PARTY_ENDPOINT_HANDLE endpoint,
             out PARTY_LOCAL_USER_HANDLE localUser);
 
-        //PartyEndpointSetProperties(
+        //PartyEndpointSetSharedProperties(
         //    PARTY_ENDPOINT_HANDLE endpoint,
         //    uint32_t propertyCount,
         //    _In_reads_(propertyCount) const PartyString* keys,
         //    _In_reads_(propertyCount) const PARTY_DATA_BUFFER* values
         //    );
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
-        internal static extern UInt32 PartyEndpointSetProperties(
+        internal static extern UInt32 PartyEndpointSetSharedProperties(
             PARTY_ENDPOINT_HANDLE endpoint,
             UInt32 propertyCount,
             [In] UTF8StringPtr[] keys,

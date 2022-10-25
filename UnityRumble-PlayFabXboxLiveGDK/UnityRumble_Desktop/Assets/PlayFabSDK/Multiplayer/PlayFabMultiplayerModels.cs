@@ -5,6 +5,13 @@ using PlayFab.SharedModels;
 
 namespace PlayFab.MultiplayerModels
 {
+    public enum AccessPolicy
+    {
+        Public,
+        Friends,
+        Private
+    }
+
     [Serializable]
     public class AssetReference : PlayFabBaseModel
     {
@@ -80,11 +87,14 @@ namespace PlayFab.MultiplayerModels
         SoutheastAsia,
         WestEurope,
         WestUs,
-        ChinaEast2,
-        ChinaNorth2,
         SouthAfricaNorth,
-        CentralUsEuap,
-        WestCentralUs
+        WestCentralUs,
+        KoreaCentral,
+        FranceCentral,
+        WestUs2,
+        CentralIndia,
+        UaeNorth,
+        UkSouth
     }
 
     public enum AzureVmFamily
@@ -100,7 +110,13 @@ namespace PlayFab.MultiplayerModels
         Eav4,
         Easv4,
         Ev4,
-        Esv4
+        Esv4,
+        Dsv3,
+        Dsv2,
+        NCasT4_v3,
+        Ddv4,
+        Ddsv4,
+        HBv3
     }
 
     public enum AzureVmSize
@@ -138,7 +154,38 @@ namespace PlayFab.MultiplayerModels
         Standard_D2a_v4,
         Standard_D4a_v4,
         Standard_D8a_v4,
-        Standard_D16a_v4
+        Standard_D16a_v4,
+        Standard_E2a_v4,
+        Standard_E4a_v4,
+        Standard_E8a_v4,
+        Standard_E16a_v4,
+        Standard_E2as_v4,
+        Standard_E4as_v4,
+        Standard_E8as_v4,
+        Standard_E16as_v4,
+        Standard_D2s_v3,
+        Standard_D4s_v3,
+        Standard_D8s_v3,
+        Standard_D16s_v3,
+        Standard_DS1_v2,
+        Standard_DS2_v2,
+        Standard_DS3_v2,
+        Standard_DS4_v2,
+        Standard_DS5_v2,
+        Standard_NC4as_T4_v3,
+        Standard_D2d_v4,
+        Standard_D4d_v4,
+        Standard_D8d_v4,
+        Standard_D16d_v4,
+        Standard_D2ds_v4,
+        Standard_D4ds_v4,
+        Standard_D8ds_v4,
+        Standard_D16ds_v4,
+        Standard_HB120_16rs_v3,
+        Standard_HB120_32rs_v3,
+        Standard_HB120_64rs_v3,
+        Standard_HB120_96rs_v3,
+        Standard_HB120rs_v3
     }
 
     [Serializable]
@@ -156,14 +203,6 @@ namespace PlayFab.MultiplayerModels
         /// Array of build selection criteria.
         /// </summary>
         public List<BuildSelectionCriterion> BuildSelectionCriteria;
-        /// <summary>
-        /// The page size on the response.
-        /// </summary>
-        public int PageSize;
-        /// <summary>
-        /// The skip token for the paged response.
-        /// </summary>
-        public string SkipToken;
     }
 
     [Serializable]
@@ -187,9 +226,17 @@ namespace PlayFab.MultiplayerModels
         /// </summary>
         public DynamicStandbySettings DynamicStandbySettings;
         /// <summary>
+        /// Whether the game assets provided for the build have been replicated to this region.
+        /// </summary>
+        public bool IsAssetReplicationComplete;
+        /// <summary>
         /// The maximum number of multiplayer servers for the region.
         /// </summary>
         public int MaxServers;
+        /// <summary>
+        /// Regional override for the number of multiplayer servers to host on a single VM of the build.
+        /// </summary>
+        public int? MultiplayerServerCountPerVm;
         /// <summary>
         /// The build region.
         /// </summary>
@@ -207,6 +254,10 @@ namespace PlayFab.MultiplayerModels
         /// Unhealthy, Deleting, Deleted.
         /// </summary>
         public string Status;
+        /// <summary>
+        /// Regional override for the VM size the build was created on.
+        /// </summary>
+        public AzureVmSize? VmSize;
     }
 
     [Serializable]
@@ -221,6 +272,10 @@ namespace PlayFab.MultiplayerModels
         /// </summary>
         public int MaxServers;
         /// <summary>
+        /// Regional override for the number of multiplayer servers to host on a single VM of the build.
+        /// </summary>
+        public int? MultiplayerServerCountPerVm;
+        /// <summary>
         /// The build region.
         /// </summary>
         public string Region;
@@ -232,6 +287,10 @@ namespace PlayFab.MultiplayerModels
         /// The number of standby multiplayer servers for the region.
         /// </summary>
         public int StandbyServers;
+        /// <summary>
+        /// Regional override for the VM size the build was created on.
+        /// </summary>
+        public AzureVmSize? VmSize;
     }
 
     [Serializable]
@@ -475,6 +534,23 @@ namespace PlayFab.MultiplayerModels
         public AzureVmFamily? VmFamily;
     }
 
+    [Serializable]
+    public class CoreCapacityChange : PlayFabBaseModel
+    {
+        /// <summary>
+        /// New quota core limit for the given vm family/region.
+        /// </summary>
+        public int NewCoreLimit;
+        /// <summary>
+        /// Region to change.
+        /// </summary>
+        public string Region;
+        /// <summary>
+        /// Virtual machine family to change.
+        /// </summary>
+        public AzureVmFamily VmFamily;
+    }
+
     /// <summary>
     /// Creates a multiplayer server build alias and returns the created alias.
     /// </summary>
@@ -544,6 +620,10 @@ namespace PlayFab.MultiplayerModels
         /// </summary>
         public Dictionary<string,string> Metadata;
         /// <summary>
+        /// The configuration for the monitoring application on the build
+        /// </summary>
+        public MonitoringApplicationConfigurationParams MonitoringApplicationConfiguration;
+        /// <summary>
         /// The number of multiplayer servers to host on a single VM.
         /// </summary>
         public int MultiplayerServerCountPerVm;
@@ -555,6 +635,10 @@ namespace PlayFab.MultiplayerModels
         /// The region configurations for the build.
         /// </summary>
         public List<BuildRegionParams> RegionConfigurations;
+        /// <summary>
+        /// The resource constraints to apply to each server on the VM (EXPERIMENTAL API)
+        /// </summary>
+        public ServerResourceConstraintParams ServerResourceConstraints;
         /// <summary>
         /// When true, assets will be downloaded and uncompressed in memory, without the compressedversion being written first to
         /// disc.
@@ -615,6 +699,10 @@ namespace PlayFab.MultiplayerModels
         /// </summary>
         public Dictionary<string,string> Metadata;
         /// <summary>
+        /// The configuration for the monitoring application for the build
+        /// </summary>
+        public MonitoringApplicationConfiguration MonitoringApplicationConfiguration;
+        /// <summary>
         /// The number of multiplayer servers to host on a single VM of the build.
         /// </summary>
         public int MultiplayerServerCountPerVm;
@@ -630,6 +718,10 @@ namespace PlayFab.MultiplayerModels
         /// The region configuration for the build.
         /// </summary>
         public List<BuildRegion> RegionConfigurations;
+        /// <summary>
+        /// The resource constraints to apply to each server on the VM (EXPERIMENTAL API)
+        /// </summary>
+        public ServerResourceConstraintParams ServerResourceConstraints;
         /// <summary>
         /// The type of game server being hosted.
         /// </summary>
@@ -691,6 +783,10 @@ namespace PlayFab.MultiplayerModels
         /// </summary>
         public Dictionary<string,string> Metadata;
         /// <summary>
+        /// The configuration for the monitoring application on the build
+        /// </summary>
+        public MonitoringApplicationConfigurationParams MonitoringApplicationConfiguration;
+        /// <summary>
         /// The number of multiplayer servers to host on a single VM.
         /// </summary>
         public int MultiplayerServerCountPerVm;
@@ -702,6 +798,10 @@ namespace PlayFab.MultiplayerModels
         /// The region configurations for the build.
         /// </summary>
         public List<BuildRegionParams> RegionConfigurations;
+        /// <summary>
+        /// The resource constraints to apply to each server on the VM (EXPERIMENTAL API)
+        /// </summary>
+        public ServerResourceConstraintParams ServerResourceConstraints;
         /// <summary>
         /// The command to run when the multiplayer server is started, including any arguments.
         /// </summary>
@@ -715,6 +815,10 @@ namespace PlayFab.MultiplayerModels
         /// The VM size to create the build on.
         /// </summary>
         public AzureVmSize? VmSize;
+        /// <summary>
+        /// The crash dump configuration for the build.
+        /// </summary>
+        public WindowsCrashDumpConfiguration WindowsCrashDumpConfiguration;
     }
 
     [Serializable]
@@ -763,6 +867,10 @@ namespace PlayFab.MultiplayerModels
         /// </summary>
         public Dictionary<string,string> Metadata;
         /// <summary>
+        /// The configuration for the monitoring application for the build
+        /// </summary>
+        public MonitoringApplicationConfiguration MonitoringApplicationConfiguration;
+        /// <summary>
         /// The number of multiplayer servers to host on a single VM of the build.
         /// </summary>
         public int MultiplayerServerCountPerVm;
@@ -778,6 +886,10 @@ namespace PlayFab.MultiplayerModels
         /// The region configuration for the build.
         /// </summary>
         public List<BuildRegion> RegionConfigurations;
+        /// <summary>
+        /// The resource constraints to apply to each server on the VM (EXPERIMENTAL API)
+        /// </summary>
+        public ServerResourceConstraintParams ServerResourceConstraints;
         /// <summary>
         /// The type of game server being hosted.
         /// </summary>
@@ -844,6 +956,10 @@ namespace PlayFab.MultiplayerModels
         /// Game Server SDK (GSDK).Constraints: Maximum number of keys: 30, Maximum key length: 50, Maximum value length: 100
         /// </summary>
         public Dictionary<string,string> Metadata;
+        /// <summary>
+        /// The configuration for the monitoring application on the build
+        /// </summary>
+        public MonitoringApplicationConfigurationParams MonitoringApplicationConfiguration;
         /// <summary>
         /// The number of multiplayer servers to host on a single VM.
         /// </summary>
@@ -927,6 +1043,10 @@ namespace PlayFab.MultiplayerModels
         /// </summary>
         public Dictionary<string,string> Metadata;
         /// <summary>
+        /// The configuration for the monitoring application for the build
+        /// </summary>
+        public MonitoringApplicationConfiguration MonitoringApplicationConfiguration;
+        /// <summary>
         /// The number of multiplayer servers to host on a single VM of the build.
         /// </summary>
         public int MultiplayerServerCountPerVm;
@@ -960,6 +1080,83 @@ namespace PlayFab.MultiplayerModels
         /// The VM size the build was created on.
         /// </summary>
         public AzureVmSize? VmSize;
+    }
+
+    /// <summary>
+    /// Request to create a lobby. A Server or client can create a lobby.
+    /// </summary>
+    [Serializable]
+    public class CreateLobbyRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The policy indicating who is allowed to join the lobby, and the visibility to queries. May be 'Public', 'Friends' or
+        /// 'Private'. Public means the lobby is both visible in queries and any player may join, including invited players. Friends
+        /// means that users who are bidirectional friends of members in the lobby may search to find friend lobbies, to retrieve
+        /// its connection string. Private means the lobby is not visible in queries, and a player must receive an invitation to
+        /// join. Defaults to 'Public' on creation. Can only be changed by the lobby owner.
+        /// </summary>
+        public AccessPolicy? AccessPolicy;
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The private key-value pairs which are only visible to members of the lobby. At most 30 key-value pairs may be stored
+        /// here, keys are limited to 30 characters and values to 1000. The total size of all lobbyData values may not exceed 4096
+        /// bytes. Keys are case sensitive.
+        /// </summary>
+        public Dictionary<string,string> LobbyData;
+        /// <summary>
+        /// The maximum number of players allowed in the lobby. The value must be between 2 and 128.
+        /// </summary>
+        public uint MaxPlayers;
+        /// <summary>
+        /// The member initially added to the lobby. Client must specify exactly one member, which is the creator's entity and
+        /// member data. Member PubSubConnectionHandle must be null or empty. Game servers must not specify any members.
+        /// </summary>
+        public List<Member> Members;
+        /// <summary>
+        /// The lobby owner. Must be the calling entity.
+        /// </summary>
+        public EntityKey Owner;
+        /// <summary>
+        /// The policy for how a new owner is chosen. May be 'Automatic', 'Manual' or 'None'. Can only be specified by clients. If
+        /// client-owned and 'Automatic' - The Lobby service will automatically assign another connected owner when the current
+        /// owner leaves or disconnects. The useConnections property must be true. If client - owned and 'Manual' - Ownership is
+        /// protected as long as the current owner is connected. If the current owner leaves or disconnects any member may set
+        /// themselves as the current owner. The useConnections property must be true. If client-owned and 'None' - Any member can
+        /// set ownership. The useConnections property can be either true or false.
+        /// </summary>
+        public OwnerMigrationPolicy? OwnerMigrationPolicy;
+        /// <summary>
+        /// The public key-value pairs which allow queries to differentiate between lobbies. Queries will refer to these key-value
+        /// pairs in their filter and order by clauses to retrieve lobbies fitting the specified criteria. At most 30 key-value
+        /// pairs may be stored here. Keys are of the format string_key1, string_key2 ... string_key30 for string values, or
+        /// number_key1, number_key2, ... number_key30 for numeric values.Numeric values are floats. Values can be at most 256
+        /// characters long. The total size of all searchData values may not exceed 1024 bytes.
+        /// </summary>
+        public Dictionary<string,string> SearchData;
+        /// <summary>
+        /// A setting to control whether connections are used. Defaults to true. When true, notifications are sent to subscribed
+        /// players, disconnect detection removes connectionHandles, only owner migration policies using connections are allowed,
+        /// and lobbies must have at least one connected member to be searchable or be a server hosted lobby with a connected
+        /// server. If false, then notifications are not sent, connections are not allowed, and lobbies do not need connections to
+        /// be searchable.
+        /// </summary>
+        public bool UseConnections;
+    }
+
+    [Serializable]
+    public class CreateLobbyResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// A field which indicates which lobby the user will be joining.
+        /// </summary>
+        public string ConnectionString;
+        /// <summary>
+        /// Id to uniquely identify a lobby.
+        /// </summary>
+        public string LobbyId;
     }
 
     /// <summary>
@@ -1108,6 +1305,51 @@ namespace PlayFab.MultiplayerModels
         /// The Id of a match queue.
         /// </summary>
         public string QueueName;
+    }
+
+    /// <summary>
+    /// Creates a request to change a title's multiplayer server quotas.
+    /// </summary>
+    [Serializable]
+    public class CreateTitleMultiplayerServersQuotaChangeRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// A brief description of the requested changes.
+        /// </summary>
+        public string ChangeDescription;
+        /// <summary>
+        /// Changes to make to the titles cores quota.
+        /// </summary>
+        public List<CoreCapacityChange> Changes;
+        /// <summary>
+        /// Email to be contacted by our team about this request. Only required when a request is not approved.
+        /// </summary>
+        public string ContactEmail;
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// Additional information about this request that our team can use to better understand the requirements.
+        /// </summary>
+        public string Notes;
+        /// <summary>
+        /// When these changes would need to be in effect. Only required when a request is not approved.
+        /// </summary>
+        public DateTime? StartDate;
+    }
+
+    [Serializable]
+    public class CreateTitleMultiplayerServersQuotaChangeResponse : PlayFabResultCommon
+    {
+        /// <summary>
+        /// Id of the change request that was created.
+        /// </summary>
+        public string RequestId;
+        /// <summary>
+        /// Determines if the request was approved or not. When false, our team is reviewing and may respond within 2 business days.
+        /// </summary>
+        public bool WasApproved;
     }
 
     [Serializable]
@@ -1298,6 +1540,22 @@ namespace PlayFab.MultiplayerModels
     }
 
     /// <summary>
+    /// Request to delete a lobby. Only servers can delete lobbies.
+    /// </summary>
+    [Serializable]
+    public class DeleteLobbyRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The id of the lobby.
+        /// </summary>
+        public string LobbyId;
+    }
+
+    /// <summary>
     /// Deletes a remote user to log on to a VM for a multiplayer server build in a specific region. Returns user credential
     /// information necessary to log on.
     /// </summary>
@@ -1450,6 +1708,148 @@ namespace PlayFab.MultiplayerModels
         public string Type;
     }
 
+    /// <summary>
+    /// Request to find friends lobbies. Only a client can find friend lobbies.
+    /// </summary>
+    [Serializable]
+    public class FindFriendLobbiesRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// Controls whether this query should link to friends made on the Facebook network. Defaults to false
+        /// </summary>
+        public bool ExcludeFacebookFriends;
+        /// <summary>
+        /// Controls whether this query should link to friends made on the Steam network. Defaults to false
+        /// </summary>
+        public bool ExcludeSteamFriends;
+        /// <summary>
+        /// OData style string that contains one or more filters. Only the following operators are supported: "and" (logical and),
+        /// "eq" (equal), "ne" (not equals), "ge" (greater than or equal), "gt" (greater than), "le" (less than or equal), and "lt"
+        /// (less than). The left-hand side of each OData logical expression should be either a search property key (e.g.
+        /// string_key1, number_key3, etc) or one of the pre-defined search keys all of which must be prefixed by "lobby/":
+        /// lobby/memberCount (number of players in a lobby), lobby/maxMemberCount (maximum number of players allowed in a lobby),
+        /// lobby/membershipLock (must equal 'Unlocked' or 'Locked'), lobby/amOwner (required to equal "true"), lobby/amMember
+        /// (required to equal "true").
+        /// </summary>
+        public string Filter;
+        /// <summary>
+        /// OData style string that contains sorting for this query in either ascending ("asc") or descending ("desc") order.
+        /// OrderBy clauses are of the form "number_key1 asc" or the pre-defined search key "lobby/memberCount asc" and
+        /// "lobby/maxMemberCount desc". To sort by closest, a moniker `distance{number_key1 = 5}` can be used to sort by distance
+        /// from the given number. This field only supports either one sort clause or one distance clause.
+        /// </summary>
+        public string OrderBy;
+        /// <summary>
+        /// Request pagination information.
+        /// </summary>
+        public PaginationRequest Pagination;
+        /// <summary>
+        /// Xbox token if Xbox friends should be included. Requires Xbox be configured on PlayFab.
+        /// </summary>
+        public string XboxToken;
+    }
+
+    [Serializable]
+    public class FindFriendLobbiesResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// Array of lobbies found that matched FindFriendLobbies request.
+        /// </summary>
+        public List<FriendLobbySummary> Lobbies;
+        /// <summary>
+        /// Pagination response for FindFriendLobbies request.
+        /// </summary>
+        public PaginationResponse Pagination;
+    }
+
+    /// <summary>
+    /// Request to find lobbies.
+    /// </summary>
+    [Serializable]
+    public class FindLobbiesRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// OData style string that contains one or more filters. Only the following operators are supported: "and" (logical and),
+        /// "eq" (equal), "ne" (not equals), "ge" (greater than or equal), "gt" (greater than), "le" (less than or equal), and "lt"
+        /// (less than). The left-hand side of each OData logical expression should be either a search property key (e.g.
+        /// string_key1, number_key3, etc) or one of the pre-defined search keys all of which must be prefixed by "lobby/":
+        /// lobby/memberCount (number of players in a lobby), lobby/maxMemberCount (maximum number of players allowed in a lobby),
+        /// lobby/membershipLock (must equal 'Unlocked' or 'Locked'), lobby/amOwner (required to equal "true"), lobby/amMember
+        /// (required to equal "true").
+        /// </summary>
+        public string Filter;
+        /// <summary>
+        /// OData style string that contains sorting for this query in either ascending ("asc") or descending ("desc") order.
+        /// OrderBy clauses are of the form "number_key1 asc" or the pre-defined search key "lobby/memberCount asc" and
+        /// "lobby/maxMemberCount desc". To sort by closest, a moniker `distance{number_key1 = 5}` can be used to sort by distance
+        /// from the given number. This field only supports either one sort clause or one distance clause.
+        /// </summary>
+        public string OrderBy;
+        /// <summary>
+        /// Request pagination information.
+        /// </summary>
+        public PaginationRequest Pagination;
+    }
+
+    [Serializable]
+    public class FindLobbiesResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// Array of lobbies found that matched FindLobbies request.
+        /// </summary>
+        public List<LobbySummary> Lobbies;
+        /// <summary>
+        /// Pagination response for FindLobbies request.
+        /// </summary>
+        public PaginationResponse Pagination;
+    }
+
+    [Serializable]
+    public class FriendLobbySummary : PlayFabBaseModel
+    {
+        /// <summary>
+        /// A string used to join the lobby.This field is populated by the Lobby service.Invites are performed by communicating this
+        /// connectionString to other players.
+        /// </summary>
+        public string ConnectionString;
+        /// <summary>
+        /// The current number of players in the lobby.
+        /// </summary>
+        public uint CurrentPlayers;
+        /// <summary>
+        /// Friends in Lobby.
+        /// </summary>
+        public List<EntityKey> Friends;
+        /// <summary>
+        /// Id to uniquely identify a lobby.
+        /// </summary>
+        public string LobbyId;
+        /// <summary>
+        /// The maximum number of players allowed in the lobby.
+        /// </summary>
+        public uint MaxPlayers;
+        /// <summary>
+        /// A setting indicating whether members are allowed to join this lobby. When Locked new members are prevented from joining.
+        /// </summary>
+        public MembershipLock? MembershipLock;
+        /// <summary>
+        /// The client or server entity which owns this lobby.
+        /// </summary>
+        public EntityKey Owner;
+        /// <summary>
+        /// Search data.
+        /// </summary>
+        public Dictionary<string,string> SearchData;
+    }
+
     [Serializable]
     public class GameCertificateReference : PlayFabBaseModel
     {
@@ -1480,6 +1880,35 @@ namespace PlayFab.MultiplayerModels
         /// title.
         /// </summary>
         public string Name;
+    }
+
+    /// <summary>
+    /// Gets a URL that can be used to download the specified asset.
+    /// </summary>
+    [Serializable]
+    public class GetAssetDownloadUrlRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The asset's file name to get the download URL for.
+        /// </summary>
+        public string FileName;
+    }
+
+    [Serializable]
+    public class GetAssetDownloadUrlResponse : PlayFabResultCommon
+    {
+        /// <summary>
+        /// The asset's download URL.
+        /// </summary>
+        public string AssetDownloadUrl;
+        /// <summary>
+        /// The asset's file name to get the download URL for.
+        /// </summary>
+        public string FileName;
     }
 
     /// <summary>
@@ -1614,6 +2043,10 @@ namespace PlayFab.MultiplayerModels
         /// </summary>
         public List<BuildRegion> RegionConfigurations;
         /// <summary>
+        /// The resource constraints to apply to each server on the VM.
+        /// </summary>
+        public ServerResourceConstraintParams ServerResourceConstraints;
+        /// <summary>
         /// The type of game server being hosted.
         /// </summary>
         public string ServerType;
@@ -1622,11 +2055,6 @@ namespace PlayFab.MultiplayerModels
         /// builds. If the build is a custom build, this field will be null.
         /// </summary>
         public string StartMultiplayerServerCommand;
-        /// <summary>
-        /// When true, assets will be downloaded and uncompressed in memory, without the compressedversion being written first to
-        /// disc.
-        /// </summary>
-        public bool? UseStreamingForAssetDownloads;
         /// <summary>
         /// The VM size the build was created on.
         /// </summary>
@@ -1661,6 +2089,31 @@ namespace PlayFab.MultiplayerModels
         /// The username for accessing the container registry.
         /// </summary>
         public string Username;
+    }
+
+    /// <summary>
+    /// Request to get a lobby.
+    /// </summary>
+    [Serializable]
+    public class GetLobbyRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The id of the lobby.
+        /// </summary>
+        public string LobbyId;
+    }
+
+    [Serializable]
+    public class GetLobbyResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// The information pertaining to the requested lobby.
+        /// </summary>
+        public Lobby Lobby;
     }
 
     /// <summary>
@@ -1721,6 +2174,10 @@ namespace PlayFab.MultiplayerModels
         /// The reason why the current ticket was canceled. This field is only set if the ticket is in canceled state.
         /// </summary>
         public string CancellationReasonString;
+        /// <summary>
+        /// Change number used for differentiating older matchmaking status updates from newer ones.
+        /// </summary>
+        public uint? ChangeNumber;
         /// <summary>
         /// The server date and time at which ticket was created.
         /// </summary>
@@ -1795,6 +2252,10 @@ namespace PlayFab.MultiplayerModels
     public class GetMatchResult : PlayFabResultCommon
     {
         /// <summary>
+        /// A string that is used by players that are matched together to join an arranged lobby.
+        /// </summary>
+        public string ArrangementString;
+        /// <summary>
         /// The Id of a match.
         /// </summary>
         public string MatchId;
@@ -1822,6 +2283,7 @@ namespace PlayFab.MultiplayerModels
         /// <summary>
         /// The guid string build ID of the multiplayer server to get details for.
         /// </summary>
+        [Obsolete("No longer available", true)]
         public string BuildId;
         /// <summary>
         /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
@@ -1830,6 +2292,7 @@ namespace PlayFab.MultiplayerModels
         /// <summary>
         /// The region the multiplayer server is located in to get details for.
         /// </summary>
+        [Obsolete("No longer available", true)]
         public string Region;
         /// <summary>
         /// The title generated guid string session ID of the multiplayer server to get details for. This is to keep track of
@@ -1841,6 +2304,10 @@ namespace PlayFab.MultiplayerModels
     [Serializable]
     public class GetMultiplayerServerDetailsResponse : PlayFabResultCommon
     {
+        /// <summary>
+        /// The identity of the build in which the server was allocated.
+        /// </summary>
+        public string BuildId;
         /// <summary>
         /// The connected players in the multiplayer server.
         /// </summary>
@@ -2086,6 +2553,31 @@ namespace PlayFab.MultiplayerModels
     }
 
     /// <summary>
+    /// Gets a title's server quota change request.
+    /// </summary>
+    [Serializable]
+    public class GetTitleMultiplayerServersQuotaChangeRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// Id of the change request to get.
+        /// </summary>
+        public string RequestId;
+    }
+
+    [Serializable]
+    public class GetTitleMultiplayerServersQuotaChangeResponse : PlayFabResultCommon
+    {
+        /// <summary>
+        /// The change request for this title.
+        /// </summary>
+        public QuotaChange Change;
+    }
+
+    /// <summary>
     /// Gets the quotas for a title in relation to multiplayer servers.
     /// </summary>
     [Serializable]
@@ -2110,11 +2602,132 @@ namespace PlayFab.MultiplayerModels
     public class InstrumentationConfiguration : PlayFabBaseModel
     {
         /// <summary>
-        /// The list of processes to be monitored on a VM for this build. Providing processes will turn on performance metrics
-        /// collection for this build. Process names should not include extensions. If the game server process is: GameServer.exe;
-        /// then, ProcessesToMonitor = [ GameServer ]
+        /// Designates whether windows instrumentation configuration will be enabled for this Build
+        /// </summary>
+        public bool? IsEnabled;
+        /// <summary>
+        /// This property is deprecated, use IsEnabled. The list of processes to be monitored on a VM for this build. Providing
+        /// processes will turn on performance metrics collection for this build. Process names should not include extensions. If
+        /// the game server process is: GameServer.exe; then, ProcessesToMonitor = [ GameServer ]
         /// </summary>
         public List<string> ProcessesToMonitor;
+    }
+
+    /// <summary>
+    /// Request to invite a player to a lobby the caller is already a member of. Only a client can invite another player to a
+    /// lobby.
+    /// </summary>
+    [Serializable]
+    public class InviteToLobbyRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The entity invited to the lobby.
+        /// </summary>
+        public EntityKey InviteeEntity;
+        /// <summary>
+        /// The id of the lobby.
+        /// </summary>
+        public string LobbyId;
+        /// <summary>
+        /// The member entity sending the invite. Must be a member of the lobby.
+        /// </summary>
+        public EntityKey MemberEntity;
+    }
+
+    /// <summary>
+    /// Request to join an arranged lobby. Only a client can join an arranged lobby.
+    /// </summary>
+    [Serializable]
+    public class JoinArrangedLobbyRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The policy indicating who is allowed to join the lobby, and the visibility to queries. May be 'Public', 'Friends' or
+        /// 'Private'. Public means the lobby is both visible in queries and any player may join, including invited players. Friends
+        /// means that users who are bidirectional friends of members in the lobby may search to find friend lobbies, to retrieve
+        /// its connection string. Private means the lobby is not visible in queries, and a player must receive an invitation to
+        /// join. Defaults to 'Public' on creation. Can only be changed by the lobby owner.
+        /// </summary>
+        public AccessPolicy? AccessPolicy;
+        /// <summary>
+        /// A field which indicates which lobby the user will be joining. This field is opaque to everyone except the Lobby service
+        /// and the creator of the arrangementString (Matchmaking). This string defines a unique identifier for the arranged lobby
+        /// as well as the title and member the string is valid for. Arrangement strings have an expiration.
+        /// </summary>
+        public string ArrangementString;
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The maximum number of players allowed in the lobby. The value must be between 2 and 128.
+        /// </summary>
+        public uint MaxPlayers;
+        /// <summary>
+        /// The private key-value pairs used by the member to communicate information to other members and the owner. Visible to all
+        /// members of the lobby. At most 30 key-value pairs may be stored here, keys are limited to 30 characters and values to
+        /// 1000. The total size of all memberData values may not exceed 4096 bytes. Keys are case sensitive.
+        /// </summary>
+        public Dictionary<string,string> MemberData;
+        /// <summary>
+        /// The member entity who is joining the lobby. The first member to join will be the lobby owner.
+        /// </summary>
+        public EntityKey MemberEntity;
+        /// <summary>
+        /// The policy for how a new owner is chosen. May be 'Automatic', 'Manual' or 'None'. Can only be specified by clients. If
+        /// client-owned and 'Automatic' - The Lobby service will automatically assign another connected owner when the current
+        /// owner leaves or disconnects. The useConnections property must be true. If client - owned and 'Manual' - Ownership is
+        /// protected as long as the current owner is connected. If the current owner leaves or disconnects any member may set
+        /// themselves as the current owner. The useConnections property must be true. If client-owned and 'None' - Any member can
+        /// set ownership. The useConnections property can be either true or false.
+        /// </summary>
+        public OwnerMigrationPolicy? OwnerMigrationPolicy;
+        /// <summary>
+        /// A setting to control whether connections are used. Defaults to true. When true, notifications are sent to subscribed
+        /// players, disconnect detection removes connectionHandles, only owner migration policies using connections are allowed,
+        /// and lobbies must have at least one connected member to be searchable or be a server hosted lobby with a connected
+        /// server. If false, then notifications are not sent, connections are not allowed, and lobbies do not need connections to
+        /// be searchable.
+        /// </summary>
+        public bool UseConnections;
+    }
+
+    /// <summary>
+    /// Request to join a lobby. Only a client can join a lobby.
+    /// </summary>
+    [Serializable]
+    public class JoinLobbyRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// A field which indicates which lobby the user will be joining. This field is opaque to everyone except the Lobby service.
+        /// </summary>
+        public string ConnectionString;
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The private key-value pairs used by the member to communicate information to other members and the owner. Visible to all
+        /// members of the lobby. At most 30 key-value pairs may be stored here, keys are limited to 30 characters and values to
+        /// 1000. The total size of all memberData values may not exceed 4096 bytes.Keys are case sensitive.
+        /// </summary>
+        public Dictionary<string,string> MemberData;
+        /// <summary>
+        /// The member entity who is joining the lobby.
+        /// </summary>
+        public EntityKey MemberEntity;
+    }
+
+    [Serializable]
+    public class JoinLobbyResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// Successfully joined lobby's id.
+        /// </summary>
+        public string LobbyId;
     }
 
     /// <summary>
@@ -2147,6 +2760,26 @@ namespace PlayFab.MultiplayerModels
     [Serializable]
     public class JoinMatchmakingTicketResult : PlayFabResultCommon
     {
+    }
+
+    /// <summary>
+    /// Request to leave a lobby. Only a client can leave a lobby.
+    /// </summary>
+    [Serializable]
+    public class LeaveLobbyRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The id of the lobby.
+        /// </summary>
+        public string LobbyId;
+        /// <summary>
+        /// The member entity leaving the lobby.
+        /// </summary>
+        public EntityKey MemberEntity;
     }
 
     [Serializable]
@@ -2276,13 +2909,41 @@ namespace PlayFab.MultiplayerModels
         public string SkipToken;
     }
 
+    /// <summary>
+    /// Returns a list of summarized details of all multiplayer server builds for a title.
+    /// </summary>
     [Serializable]
-    public class ListBuildAliasesForTitleResponse : PlayFabResultCommon
+    public class ListBuildAliasesRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The page size for the request.
+        /// </summary>
+        public int? PageSize;
+        /// <summary>
+        /// The skip token for the paged request.
+        /// </summary>
+        public string SkipToken;
+    }
+
+    [Serializable]
+    public class ListBuildAliasesResponse : PlayFabResultCommon
     {
         /// <summary>
         /// The list of build aliases for the title
         /// </summary>
         public List<BuildAliasDetailsResponse> BuildAliases;
+        /// <summary>
+        /// The page size on the response.
+        /// </summary>
+        public int PageSize;
+        /// <summary>
+        /// The skip token for the paged response.
+        /// </summary>
+        public string SkipToken;
     }
 
     /// <summary>
@@ -2610,6 +3271,27 @@ namespace PlayFab.MultiplayerModels
     }
 
     /// <summary>
+    /// List all server quota change requests for a title.
+    /// </summary>
+    [Serializable]
+    public class ListTitleMultiplayerServersQuotaChangesRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+    }
+
+    [Serializable]
+    public class ListTitleMultiplayerServersQuotaChangesResponse : PlayFabResultCommon
+    {
+        /// <summary>
+        /// All change requests for this title.
+        /// </summary>
+        public List<QuotaChange> Changes;
+    }
+
+    /// <summary>
     /// Returns a list of virtual machines for a title.
     /// </summary>
     [Serializable]
@@ -2652,6 +3334,104 @@ namespace PlayFab.MultiplayerModels
         /// The list of virtual machine summaries.
         /// </summary>
         public List<VirtualMachineSummary> VirtualMachines;
+    }
+
+    [Serializable]
+    public class Lobby : PlayFabBaseModel
+    {
+        /// <summary>
+        /// A setting indicating who is allowed to join this lobby, as well as see it in queries.
+        /// </summary>
+        public AccessPolicy AccessPolicy;
+        /// <summary>
+        /// A number that increments once for each request that modifies the lobby.
+        /// </summary>
+        public uint ChangeNumber;
+        /// <summary>
+        /// A string used to join the lobby. This field is populated by the Lobby service. Invites are performed by communicating
+        /// this connectionString to other players.
+        /// </summary>
+        public string ConnectionString;
+        /// <summary>
+        /// Lobby data.
+        /// </summary>
+        public Dictionary<string,string> LobbyData;
+        /// <summary>
+        /// Id to uniquely identify a lobby.
+        /// </summary>
+        public string LobbyId;
+        /// <summary>
+        /// The maximum number of players allowed in the lobby.
+        /// </summary>
+        public uint MaxPlayers;
+        /// <summary>
+        /// Array of all lobby members.
+        /// </summary>
+        public List<Member> Members;
+        /// <summary>
+        /// A setting indicating whether members are allowed to join this lobby. When Locked new members are prevented from joining.
+        /// </summary>
+        public MembershipLock MembershipLock;
+        /// <summary>
+        /// The client or server entity which owns this lobby.
+        /// </summary>
+        public EntityKey Owner;
+        /// <summary>
+        /// A setting indicating the owner migration policy. If server owned, this field is not present.
+        /// </summary>
+        public OwnerMigrationPolicy? OwnerMigrationPolicy;
+        /// <summary>
+        /// An opaque string stored on a SubscribeToLobbyResource call, which indicates the connection an owner or member has with
+        /// PubSub.
+        /// </summary>
+        public string PubSubConnectionHandle;
+        /// <summary>
+        /// Search data.
+        /// </summary>
+        public Dictionary<string,string> SearchData;
+        /// <summary>
+        /// A flag which determines if connections are used. Defaults to true. Only set on create.
+        /// </summary>
+        public bool UseConnections;
+    }
+
+    [Serializable]
+    public class LobbyEmptyResult : PlayFabResultCommon
+    {
+    }
+
+    [Serializable]
+    public class LobbySummary : PlayFabBaseModel
+    {
+        /// <summary>
+        /// A string used to join the lobby.This field is populated by the Lobby service.Invites are performed by communicating this
+        /// connectionString to other players.
+        /// </summary>
+        public string ConnectionString;
+        /// <summary>
+        /// The current number of players in the lobby.
+        /// </summary>
+        public uint CurrentPlayers;
+        /// <summary>
+        /// Id to uniquely identify a lobby.
+        /// </summary>
+        public string LobbyId;
+        /// <summary>
+        /// The maximum number of players allowed in the lobby.
+        /// </summary>
+        public uint MaxPlayers;
+        /// <summary>
+        /// A setting indicating whether members are allowed to join this lobby. When Locked new members are prevented from joining.
+        /// </summary>
+        public MembershipLock? MembershipLock;
+        /// <summary>
+        /// The client or server entity which owns this lobby.
+        /// </summary>
+        public EntityKey Owner;
+        /// <summary>
+        /// Search data.
+        /// </summary>
+        public Dictionary<string,string> SearchData;
     }
 
     /// <summary>
@@ -2710,6 +3490,10 @@ namespace PlayFab.MultiplayerModels
     [Serializable]
     public class MatchmakingQueueConfig : PlayFabBaseModel
     {
+        /// <summary>
+        /// This is the buildAlias that will be used to allocate the multiplayer server for the match.
+        /// </summary>
+        public BuildAliasParams BuildAliasParams;
         /// <summary>
         /// This is the buildId that will be used to allocate the multiplayer server for the match.
         /// </summary>
@@ -2844,16 +3628,69 @@ namespace PlayFab.MultiplayerModels
         public uint SecondsBetweenExpansions;
     }
 
-    /// <summary>
-    /// Returns a list of summarized details of all multiplayer server builds for a title.
-    /// </summary>
     [Serializable]
-    public class MultiplayerEmptyRequest : PlayFabRequestCommon
+    public class Member : PlayFabBaseModel
     {
         /// <summary>
-        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// Key-value pairs specific to member.
         /// </summary>
-        public Dictionary<string,string> CustomTags;
+        public Dictionary<string,string> MemberData;
+        /// <summary>
+        /// The member entity key.
+        /// </summary>
+        public EntityKey MemberEntity;
+        /// <summary>
+        /// Opaque string, stored on a Subscribe call, which indicates the connection an owner or member has with PubSub.
+        /// </summary>
+        public string PubSubConnectionHandle;
+    }
+
+    public enum MembershipLock
+    {
+        Unlocked,
+        Locked
+    }
+
+    [Serializable]
+    public class MonitoringApplicationConfiguration : PlayFabBaseModel
+    {
+        /// <summary>
+        /// Asset which contains the monitoring application files and scripts.
+        /// </summary>
+        public AssetReference AssetReference;
+        /// <summary>
+        /// Execution script name, this will be the main executable for the monitoring application.
+        /// </summary>
+        public string ExecutionScriptName;
+        /// <summary>
+        /// Installation script name, this will be run before the ExecutionScript.
+        /// </summary>
+        public string InstallationScriptName;
+        /// <summary>
+        /// Timespan the monitoring application will be kept alive when running from the start of the VM
+        /// </summary>
+        public double? OnStartRuntimeInMinutes;
+    }
+
+    [Serializable]
+    public class MonitoringApplicationConfigurationParams : PlayFabBaseModel
+    {
+        /// <summary>
+        /// Asset which contains the monitoring application files and scripts.
+        /// </summary>
+        public AssetReferenceParams AssetReference;
+        /// <summary>
+        /// Execution script name, this will be the main executable for the monitoring application.
+        /// </summary>
+        public string ExecutionScriptName;
+        /// <summary>
+        /// Installation script name, this will be run before the ExecutionScript.
+        /// </summary>
+        public string InstallationScriptName;
+        /// <summary>
+        /// Timespan the monitoring application will be kept alive when running from the start of the VM
+        /// </summary>
+        public double? OnStartRuntimeInMinutes;
     }
 
     [Serializable]
@@ -2913,6 +3750,40 @@ namespace PlayFab.MultiplayerModels
         public uint Value;
     }
 
+    public enum OwnerMigrationPolicy
+    {
+        None,
+        Automatic,
+        Manual,
+        Server
+    }
+
+    [Serializable]
+    public class PaginationRequest : PlayFabBaseModel
+    {
+        /// <summary>
+        /// Continuation token returned as a result in a previous FindLobbies call. Cannot be specified by clients.
+        /// </summary>
+        public string ContinuationToken;
+        /// <summary>
+        /// The number of lobbies that should be retrieved. Cannot be specified by servers, clients may specify any value up to 50
+        /// </summary>
+        public uint? PageSizeRequested;
+    }
+
+    [Serializable]
+    public class PaginationResponse : PlayFabBaseModel
+    {
+        /// <summary>
+        /// Continuation token returned by server call. Not returned for clients
+        /// </summary>
+        public string ContinuationToken;
+        /// <summary>
+        /// The number of lobbies that matched the search request.
+        /// </summary>
+        public uint? TotalMatchedLobbyCount;
+    }
+
     [Serializable]
     public class Port : PlayFabBaseModel
     {
@@ -2960,6 +3831,39 @@ namespace PlayFab.MultiplayerModels
         /// Specifies which source the attribute comes from.
         /// </summary>
         public AttributeSource Source;
+    }
+
+    [Serializable]
+    public class QuotaChange : PlayFabBaseModel
+    {
+        /// <summary>
+        /// A brief description of the requested changes.
+        /// </summary>
+        public string ChangeDescription;
+        /// <summary>
+        /// Requested changes to make to the titles cores quota.
+        /// </summary>
+        public List<CoreCapacityChange> Changes;
+        /// <summary>
+        /// Whether or not this request is pending a review.
+        /// </summary>
+        public bool IsPendingReview;
+        /// <summary>
+        /// Additional information about this request that our team can use to better understand the requirements.
+        /// </summary>
+        public string Notes;
+        /// <summary>
+        /// Id of the change request.
+        /// </summary>
+        public string RequestId;
+        /// <summary>
+        /// Comments by our team when a request is reviewed.
+        /// </summary>
+        public string ReviewComments;
+        /// <summary>
+        /// Whether or not this request was approved.
+        /// </summary>
+        public bool WasApproved;
     }
 
     [Serializable]
@@ -3020,6 +3924,31 @@ namespace PlayFab.MultiplayerModels
     }
 
     /// <summary>
+    /// Request to remove a member from a lobby. Owners may remove other members from a lobby. Members cannot remove themselves
+    /// (use LeaveLobby instead).
+    /// </summary>
+    [Serializable]
+    public class RemoveMemberFromLobbyRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The id of the lobby.
+        /// </summary>
+        public string LobbyId;
+        /// <summary>
+        /// The member entity to be removed from the lobby.
+        /// </summary>
+        public EntityKey MemberEntity;
+        /// <summary>
+        /// If true, removed member can never rejoin this lobby.
+        /// </summary>
+        public bool PreventRejoin;
+    }
+
+    /// <summary>
     /// Requests a multiplayer server session from a particular build in any of the given preferred regions.
     /// </summary>
     [Serializable]
@@ -3061,6 +3990,10 @@ namespace PlayFab.MultiplayerModels
     [Serializable]
     public class RequestMultiplayerServerResponse : PlayFabResultCommon
     {
+        /// <summary>
+        /// The identity of the build in which the server was allocated.
+        /// </summary>
+        public string BuildId;
         /// <summary>
         /// The connected players in the multiplayer server.
         /// </summary>
@@ -3180,6 +4113,10 @@ namespace PlayFab.MultiplayerModels
     public class ServerDetails : PlayFabBaseModel
     {
         /// <summary>
+        /// The fully qualified domain name of the virtual machine that is hosting this multiplayer server.
+        /// </summary>
+        public string Fqdn;
+        /// <summary>
         /// The IPv4 address of the virtual machine that is hosting this multiplayer server.
         /// </summary>
         public string IPV4Address;
@@ -3191,6 +4128,20 @@ namespace PlayFab.MultiplayerModels
         /// The server's region.
         /// </summary>
         public string Region;
+    }
+
+    [Serializable]
+    public class ServerResourceConstraintParams : PlayFabBaseModel
+    {
+        /// <summary>
+        /// The maximum number of cores that each server is allowed to use.
+        /// </summary>
+        public double CpuLimit;
+        /// <summary>
+        /// The maximum number of GiB of memory that each server is allowed to use. WARNING: After exceeding this limit, the server
+        /// will be killed
+        /// </summary>
+        public double MemoryLimitGB;
     }
 
     public enum ServerType
@@ -3276,17 +4227,9 @@ namespace PlayFab.MultiplayerModels
     public class ShutdownMultiplayerServerRequest : PlayFabRequestCommon
     {
         /// <summary>
-        /// The guid string build ID of the multiplayer server to delete.
-        /// </summary>
-        public string BuildId;
-        /// <summary>
         /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
         /// </summary>
         public Dictionary<string,string> CustomTags;
-        /// <summary>
-        /// The region of the multiplayer server to shut down.
-        /// </summary>
-        public string Region;
         /// <summary>
         /// A guid string session ID of the multiplayer server to shut down.
         /// </summary>
@@ -3375,6 +4318,96 @@ namespace PlayFab.MultiplayerModels
         /// How many seconds before this rule is expanded.
         /// </summary>
         public uint SecondsBetweenExpansions;
+    }
+
+    /// <summary>
+    /// Request to subscribe to lobby resource notifications.
+    /// </summary>
+    [Serializable]
+    public class SubscribeToLobbyResourceRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The entity performing the subscription.
+        /// </summary>
+        public EntityKey EntityKey;
+        /// <summary>
+        /// Opaque string, given to a client upon creating a connection with PubSub.
+        /// </summary>
+        public string PubSubConnectionHandle;
+        /// <summary>
+        /// The name of the resource to subscribe to.
+        /// </summary>
+        public string ResourceId;
+        /// <summary>
+        /// Version number for the subscription of this resource.
+        /// </summary>
+        public uint SubscriptionVersion;
+        /// <summary>
+        /// Subscription type.
+        /// </summary>
+        public SubscriptionType Type;
+    }
+
+    [Serializable]
+    public class SubscribeToLobbyResourceResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// Topic will be returned in all notifications that are the result of this subscription.
+        /// </summary>
+        public string Topic;
+    }
+
+    /// <summary>
+    /// Subscribe to match resource notifications. Match subscriptions have two types; MatchInvite and MatchTicketStatusChange
+    /// </summary>
+    [Serializable]
+    public class SubscribeToMatchResourceRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The entity performing the subscription. The entity must be authorized to use this connectionHandle.
+        /// </summary>
+        public EntityKey EntityKey;
+        /// <summary>
+        /// Opaque string, given to a client upon creating a connection with PubSub. Notifications will be sent to the connection
+        /// associated with this handle.
+        /// </summary>
+        public string PubSubConnectionHandle;
+        /// <summary>
+        /// The name of the resource to subscribe to.
+        /// </summary>
+        public string ResourceId;
+        /// <summary>
+        /// Version number for the subscription of this resource. Current supported version must be 1.
+        /// </summary>
+        public uint SubscriptionVersion;
+        /// <summary>
+        /// Subscription type. MatchInvite subscriptions are per-player. MatchTicketStatusChange subscriptions are per-ticket.
+        /// Subscribe calls are idempotent. Subscribing on the same resource for the same connection results in success.
+        /// </summary>
+        public string Type;
+    }
+
+    [Serializable]
+    public class SubscribeToMatchResourceResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// Matchmaking resource
+        /// </summary>
+        public string Topic;
+    }
+
+    public enum SubscriptionType
+    {
+        LobbyChange,
+        LobbyInvite
     }
 
     [Serializable]
@@ -3471,6 +4504,77 @@ namespace PlayFab.MultiplayerModels
     }
 
     /// <summary>
+    /// Request to unsubscribe from lobby notifications.
+    /// </summary>
+    [Serializable]
+    public class UnsubscribeFromLobbyResourceRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The entity which performed the subscription.
+        /// </summary>
+        public EntityKey EntityKey;
+        /// <summary>
+        /// Opaque string, given to a client upon creating a connection with PubSub.
+        /// </summary>
+        public string PubSubConnectionHandle;
+        /// <summary>
+        /// The name of the resource to unsubscribe from.
+        /// </summary>
+        public string ResourceId;
+        /// <summary>
+        /// Version number passed for the subscription of this resource.
+        /// </summary>
+        public uint SubscriptionVersion;
+        /// <summary>
+        /// Subscription type.
+        /// </summary>
+        public SubscriptionType Type;
+    }
+
+    /// <summary>
+    /// Unsubscribe from a Match resource's notifications. For MatchInvite, players are expected to unsubscribe once they can no
+    /// longer accept invites. For MatchTicketStatusChange, players are expected to unsusbcribe once the ticket has reached a
+    /// canceled or matched state.
+    /// </summary>
+    [Serializable]
+    public class UnsubscribeFromMatchResourceRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The entity performing the unsubscription. The entity must be authorized to use this connectionHandle.
+        /// </summary>
+        public EntityKey EntityKey;
+        /// <summary>
+        /// Opaque string, given to a client upon creating a connection with PubSub.
+        /// </summary>
+        public string PubSubConnectionHandle;
+        /// <summary>
+        /// The resource to unsubscribe from.
+        /// </summary>
+        public string ResourceId;
+        /// <summary>
+        /// Version number for the unsubscription from this resource.
+        /// </summary>
+        public uint SubscriptionVersion;
+        /// <summary>
+        /// Type of the subscription to be canceled.
+        /// </summary>
+        public string Type;
+    }
+
+    [Serializable]
+    public class UnsubscribeFromMatchResourceResult : PlayFabResultCommon
+    {
+    }
+
+    /// <summary>
     /// Removes the specified tag from the image. After this operation, a 'docker pull' will fail for the specified image and
     /// tag combination. Morever, ListContainerImageTags will not return the specified tag.
     /// </summary>
@@ -3509,6 +4613,26 @@ namespace PlayFab.MultiplayerModels
         /// Array of build selection criteria.
         /// </summary>
         public List<BuildSelectionCriterion> BuildSelectionCriteria;
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+    }
+
+    /// <summary>
+    /// Updates a multiplayer server build's name.
+    /// </summary>
+    [Serializable]
+    public class UpdateBuildNameRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The guid string ID of the build we want to update the name of.
+        /// </summary>
+        public string BuildId;
+        /// <summary>
+        /// The build name.
+        /// </summary>
+        public string BuildName;
         /// <summary>
         /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
         /// </summary>
@@ -3556,6 +4680,97 @@ namespace PlayFab.MultiplayerModels
     }
 
     /// <summary>
+    /// Request to update a lobby.
+    /// </summary>
+    [Serializable]
+    public class UpdateLobbyRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The policy indicating who is allowed to join the lobby, and the visibility to queries. May be 'Public', 'Friends' or
+        /// 'Private'. Public means the lobby is both visible in queries and any player may join, including invited players. Friends
+        /// means that users who are bidirectional friends of members in the lobby may search to find friend lobbies, to retrieve
+        /// its connection string. Private means the lobby is not visible in queries, and a player must receive an invitation to
+        /// join. Defaults to 'Public' on creation. Can only be changed by the lobby owner.
+        /// </summary>
+        public AccessPolicy? AccessPolicy;
+        /// <summary>
+        /// The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).
+        /// </summary>
+        public Dictionary<string,string> CustomTags;
+        /// <summary>
+        /// The private key-value pairs which are only visible to members of the lobby. Optional. Sets or updates key-value pairs on
+        /// the lobby. Only the current lobby owner can set lobby data. Keys may be an arbitrary string of at most 30 characters.
+        /// The total size of all lobbyData values may not exceed 4096 bytes. Values are not individually limited. There can be up
+        /// to 30 key-value pairs stored here. Keys are case sensitive.
+        /// </summary>
+        public Dictionary<string,string> LobbyData;
+        /// <summary>
+        /// The keys to delete from the lobby LobbyData. Optional. Behaves similar to searchDataToDelete, but applies to lobbyData.
+        /// </summary>
+        public List<string> LobbyDataToDelete;
+        /// <summary>
+        /// The id of the lobby.
+        /// </summary>
+        public string LobbyId;
+        /// <summary>
+        /// The maximum number of players allowed in the lobby. Updates the maximum allowed number of players in the lobby. Only the
+        /// current lobby owner can set this. If set, the value must be greater than or equal to the number of members currently in
+        /// the lobby.
+        /// </summary>
+        public uint? MaxPlayers;
+        /// <summary>
+        /// The private key-value pairs used by the member to communicate information to other members and the owner. Optional. Sets
+        /// or updates new key-value pairs on the caller's member data. New keys will be added with their values and existing keys
+        /// will be updated with the new values. Visible to all members of the lobby. At most 30 key-value pairs may be stored here,
+        /// keys are limited to 30 characters and values to 1000. The total size of all memberData values may not exceed 4096 bytes.
+        /// Keys are case sensitive. Servers cannot specifiy this.
+        /// </summary>
+        public Dictionary<string,string> MemberData;
+        /// <summary>
+        /// The keys to delete from the lobby MemberData. Optional. Deletes key-value pairs on the caller's member data. All the
+        /// specified keys will be removed from the caller's member data. Keys that do not exist are a no-op. If the key to delete
+        /// exists in the memberData (same request) it will result in a bad request. Servers cannot specifiy this.
+        /// </summary>
+        public List<string> MemberDataToDelete;
+        /// <summary>
+        /// The member entity whose data is being modified. Servers cannot specify this.
+        /// </summary>
+        public EntityKey MemberEntity;
+        /// <summary>
+        /// A setting indicating whether the lobby is locked. May be 'Unlocked' or 'Locked'. When Locked new members are not allowed
+        /// to join. Defaults to 'Unlocked' on creation. Can only be changed by the lobby owner.
+        /// </summary>
+        public MembershipLock? MembershipLock;
+        /// <summary>
+        /// The lobby owner. Optional. Set to transfer ownership of the lobby. If client - owned and 'Automatic' - The Lobby service
+        /// will automatically assign another connected owner when the current owner leaves or disconnects. useConnections must be
+        /// true. If client - owned and 'Manual' - Ownership is protected as long as the current owner is connected. If the current
+        /// owner leaves or disconnects any member may set themselves as the current owner. The useConnections property must be
+        /// true. If client-owned and 'None' - Any member can set ownership. The useConnections property can be either true or
+        /// false. For all client-owned lobbies when the owner leaves and a new owner can not be automatically selected - The owner
+        /// field is set to null. For all client-owned lobbies when the owner disconnects and a new owner can not be automatically
+        /// selected - The owner field remains unchanged and the current owner retains all owner abilities for the lobby. If
+        /// server-owned (must be 'Server') - Any server can set ownership. The useConnections property must be true.
+        /// </summary>
+        public EntityKey Owner;
+        /// <summary>
+        /// The public key-value pairs which allow queries to differentiate between lobbies. Optional. Sets or updates key-value
+        /// pairs on the lobby for use with queries. Only the current lobby owner can set search data. New keys will be added with
+        /// their values and existing keys will be updated with the new values. There can be up to 30 key-value pairs stored here.
+        /// Keys are of the format string_key1, string_key2... string_key30 for string values, or number_key1, number_key2, ...
+        /// number_key30 for numeric values. Numeric values are floats. Values can be at most 256 characters long. The total size of
+        /// all searchData values may not exceed 1024 bytes.Keys are case sensitive.
+        /// </summary>
+        public Dictionary<string,string> SearchData;
+        /// <summary>
+        /// The keys to delete from the lobby SearchData. Optional. Deletes key-value pairs on the lobby. Only the current lobby
+        /// owner can delete search data. All the specified keys will be removed from the search data. Keys that do not exist in the
+        /// lobby are a no-op.If the key to delete exists in the searchData (same request) it will result in a bad request.
+        /// </summary>
+        public List<string> SearchDataToDelete;
+    }
+
+    /// <summary>
     /// Uploads a multiplayer server game certificate.
     /// </summary>
     [Serializable]
@@ -3586,6 +4801,23 @@ namespace PlayFab.MultiplayerModels
         /// The virtual machine ID.
         /// </summary>
         public string VmId;
+    }
+
+    [Serializable]
+    public class WindowsCrashDumpConfiguration : PlayFabBaseModel
+    {
+        /// <summary>
+        /// See https://docs.microsoft.com/en-us/windows/win32/wer/collecting-user-mode-dumps for valid values.
+        /// </summary>
+        public int? CustomDumpFlags;
+        /// <summary>
+        /// See https://docs.microsoft.com/en-us/windows/win32/wer/collecting-user-mode-dumps for valid values.
+        /// </summary>
+        public int? DumpType;
+        /// <summary>
+        /// Designates whether automatic crash dump capturing will be enabled for this Build.
+        /// </summary>
+        public bool IsEnabled;
     }
 }
 #endif

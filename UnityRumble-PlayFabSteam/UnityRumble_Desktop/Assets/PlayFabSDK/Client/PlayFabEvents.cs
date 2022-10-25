@@ -109,8 +109,12 @@ namespace PlayFab.Events
         public event PlayFabResultEvent<GetPlayFabIDsFromGenericIDsResult> OnGetPlayFabIDsFromGenericIDsResultEvent;
         public event PlayFabRequestEvent<GetPlayFabIDsFromGoogleIDsRequest> OnGetPlayFabIDsFromGoogleIDsRequestEvent;
         public event PlayFabResultEvent<GetPlayFabIDsFromGoogleIDsResult> OnGetPlayFabIDsFromGoogleIDsResultEvent;
+        public event PlayFabRequestEvent<GetPlayFabIDsFromGooglePlayGamesPlayerIDsRequest> OnGetPlayFabIDsFromGooglePlayGamesPlayerIDsRequestEvent;
+        public event PlayFabResultEvent<GetPlayFabIDsFromGooglePlayGamesPlayerIDsResult> OnGetPlayFabIDsFromGooglePlayGamesPlayerIDsResultEvent;
         public event PlayFabRequestEvent<GetPlayFabIDsFromKongregateIDsRequest> OnGetPlayFabIDsFromKongregateIDsRequestEvent;
         public event PlayFabResultEvent<GetPlayFabIDsFromKongregateIDsResult> OnGetPlayFabIDsFromKongregateIDsResultEvent;
+        public event PlayFabRequestEvent<GetPlayFabIDsFromNintendoServiceAccountIdsRequest> OnGetPlayFabIDsFromNintendoServiceAccountIdsRequestEvent;
+        public event PlayFabResultEvent<GetPlayFabIDsFromNintendoServiceAccountIdsResult> OnGetPlayFabIDsFromNintendoServiceAccountIdsResultEvent;
         public event PlayFabRequestEvent<GetPlayFabIDsFromNintendoSwitchDeviceIdsRequest> OnGetPlayFabIDsFromNintendoSwitchDeviceIdsRequestEvent;
         public event PlayFabResultEvent<GetPlayFabIDsFromNintendoSwitchDeviceIdsResult> OnGetPlayFabIDsFromNintendoSwitchDeviceIdsResultEvent;
         public event PlayFabRequestEvent<GetPlayFabIDsFromPSNAccountIDsRequest> OnGetPlayFabIDsFromPSNAccountIDsRequestEvent;
@@ -165,6 +169,8 @@ namespace PlayFab.Events
         public event PlayFabResultEvent<LinkGameCenterAccountResult> OnLinkGameCenterAccountResultEvent;
         public event PlayFabRequestEvent<LinkGoogleAccountRequest> OnLinkGoogleAccountRequestEvent;
         public event PlayFabResultEvent<LinkGoogleAccountResult> OnLinkGoogleAccountResultEvent;
+        public event PlayFabRequestEvent<LinkGooglePlayGamesServicesAccountRequest> OnLinkGooglePlayGamesServicesAccountRequestEvent;
+        public event PlayFabResultEvent<LinkGooglePlayGamesServicesAccountResult> OnLinkGooglePlayGamesServicesAccountResultEvent;
         public event PlayFabRequestEvent<LinkIOSDeviceIDRequest> OnLinkIOSDeviceIDRequestEvent;
         public event PlayFabResultEvent<LinkIOSDeviceIDResult> OnLinkIOSDeviceIDResultEvent;
         public event PlayFabRequestEvent<LinkKongregateAccountRequest> OnLinkKongregateRequestEvent;
@@ -191,6 +197,7 @@ namespace PlayFab.Events
         public event PlayFabRequestEvent<LoginWithFacebookInstantGamesIdRequest> OnLoginWithFacebookInstantGamesIdRequestEvent;
         public event PlayFabRequestEvent<LoginWithGameCenterRequest> OnLoginWithGameCenterRequestEvent;
         public event PlayFabRequestEvent<LoginWithGoogleAccountRequest> OnLoginWithGoogleAccountRequestEvent;
+        public event PlayFabRequestEvent<LoginWithGooglePlayGamesServicesRequest> OnLoginWithGooglePlayGamesServicesRequestEvent;
         public event PlayFabRequestEvent<LoginWithIOSDeviceIDRequest> OnLoginWithIOSDeviceIDRequestEvent;
         public event PlayFabRequestEvent<LoginWithKongregateRequest> OnLoginWithKongregateRequestEvent;
         public event PlayFabRequestEvent<LoginWithNintendoServiceAccountRequest> OnLoginWithNintendoServiceAccountRequestEvent;
@@ -259,6 +266,8 @@ namespace PlayFab.Events
         public event PlayFabResultEvent<UnlinkGameCenterAccountResult> OnUnlinkGameCenterAccountResultEvent;
         public event PlayFabRequestEvent<UnlinkGoogleAccountRequest> OnUnlinkGoogleAccountRequestEvent;
         public event PlayFabResultEvent<UnlinkGoogleAccountResult> OnUnlinkGoogleAccountResultEvent;
+        public event PlayFabRequestEvent<UnlinkGooglePlayGamesServicesAccountRequest> OnUnlinkGooglePlayGamesServicesAccountRequestEvent;
+        public event PlayFabResultEvent<UnlinkGooglePlayGamesServicesAccountResult> OnUnlinkGooglePlayGamesServicesAccountResultEvent;
         public event PlayFabRequestEvent<UnlinkIOSDeviceIDRequest> OnUnlinkIOSDeviceIDRequestEvent;
         public event PlayFabResultEvent<UnlinkIOSDeviceIDResult> OnUnlinkIOSDeviceIDResultEvent;
         public event PlayFabRequestEvent<UnlinkKongregateAccountRequest> OnUnlinkKongregateRequestEvent;
