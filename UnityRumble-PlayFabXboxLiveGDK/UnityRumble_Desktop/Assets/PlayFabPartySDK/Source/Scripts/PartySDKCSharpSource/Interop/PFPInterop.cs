@@ -8,7 +8,7 @@ namespace PartyCSharpSDK.Interop
 #if (UNITY_GAMECORE || MICROSOFT_GAME_CORE) && !UNITY_EDITOR
         const string ThunkDllName = "PartyWin";
 #elif UNITY_SWITCH && !UNITY_EDITOR
-        const string ThunkDllName = "__Internal";
+        const string ThunkDllName = "Party";
 #elif UNITY_IOS && !UNITY_EDITOR
         const string ThunkDllName = "__Internal";
 #elif UNITY_ANDROID && !UNITY_EDITOR
@@ -17,6 +17,8 @@ namespace PartyCSharpSDK.Interop
         const string ThunkDllName = "Party.prx";
 #elif UNITY_PS5 && !UNITY_EDITOR
         const string ThunkDllName = "Party.prx";
+#elif (UNITY_STANDALONE_LINUX || UNITY_EDITOR_LINUX)
+        const string ThunkDllName = "party";
 #else
         const string ThunkDllName = "PartyWin32";
 #endif

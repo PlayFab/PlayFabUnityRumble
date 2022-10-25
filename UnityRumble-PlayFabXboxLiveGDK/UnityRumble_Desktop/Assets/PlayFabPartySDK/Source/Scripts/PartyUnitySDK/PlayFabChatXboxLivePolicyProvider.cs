@@ -188,7 +188,7 @@ namespace PlayFab.Party._Internal
                 messageSize < _INTERNAL_XUID_EXCHANGE_MESSAGE_BUFFER_SIZE)
             {
                 Marshal.Copy(messageBuffer, _internalXuidExchangeMessageBuffer, 0, (int)messageSize);
-                if (StartsWithSequence(_internalXuidExchangeMessageBuffer, _XUID_EXCHANGE_REQUEST_AS_BYTES))
+                if (_multiplayerManager._StartsWithSequence(_internalXuidExchangeMessageBuffer, _XUID_EXCHANGE_REQUEST_AS_BYTES))
                 {
                     isInternalMessage = true;
                     PlayFabMultiplayerManager._LogInfo("PlayFabChatXboxLivePolicyProvider: received remote XUID.");
@@ -620,27 +620,6 @@ namespace PlayFab.Party._Internal
         private bool HrSucceeded(int hresult)
         {
             return hresult >= 0;
-        }
-
-        private bool StartsWithSequence(byte[] buffer, byte[] sequence)
-        {
-            bool startsWithSequence = true;
-            if (buffer.Length > sequence.Length + 1)
-            {
-                for (int i = 0; i < sequence.Length; i++)
-                {
-                    if (buffer[i] != sequence[i])
-                    {
-                        startsWithSequence = false;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                startsWithSequence = false;
-            }
-            return startsWithSequence;
         }
 
         private class PlayerComparator : IEqualityComparer<PlayFabPlayer>

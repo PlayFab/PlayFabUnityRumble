@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Runtime.InteropServices;
 using PartyCSharpSDK;
 using PartyXBLCSharpSDK;
@@ -51,7 +52,6 @@ namespace PlayFab.Party
         private static PlayFabMultiplayerManager _multiplayerManager;
         private static LogLevelType _logLevel;
         private static bool _logLevelSetByUser;
-        private static bool _cleanupStarted;
 
         private IPlayFabChatPlatformPolicyProvider _platformPolicyProvider;
         private PlayFabLocalPlayer _localPlayer;
@@ -95,6 +95,8 @@ namespace PlayFab.Party
         private const int _ENDPOINTS_PER_DEVICE_COUNT = 1;
         private const int _USERS_PER_DEVICE = 1;
         private const string _NETWORK_ID_INVITE_AND_DESCRIPTOR_SEPERATOR = "|";
+        private const uint _INTERNAL_EXCHANGE_MESSAGE_BUFFER_SIZE = 128;
+        private const string _INTERNAL_EXCHANGE_REQUEST_MESSAGE_PREFIX = "PFP-";
 
         private const PARTY_CHAT_PERMISSION_OPTIONS _CHAT_PERMISSIONS_ALL =
             PARTY_CHAT_PERMISSION_OPTIONS.PARTY_CHAT_PERMISSION_OPTIONS_SEND_AUDIO |
@@ -120,6 +122,11 @@ namespace PlayFab.Party
         private const uint _c_ErrorAlreadyInitialized = 4101;
         private const uint _c_ErrorObjectIsBeingDestroyed = 4104;
 
+        private List<WorkTask> _tasks = new List<WorkTask>();
+        private WorkTask _runningTask = null;
+
+        private bool gameObjectPersisted = false;
+
         private void Awake()
         {
 #if UNITY_EDITOR && UNITY_2019_1_OR_NEWER
@@ -130,23 +137,30 @@ namespace PlayFab.Party
         // Start is called before the first frame update
         private void Start()
         {
+#if UNITY_SWITCH && !UNITY_EDITOR
+            _SwitchInitialize();
+#else
             _Initialize();
+#endif
         }
 
 #if UNITY_EDITOR
         private void CompilationPipelineCompilationStarted(object obj)
         {
-            CleanUp();
+            _CleanUp();
         }
 #endif
 
         private void OnApplicationQuit()
         {
-            CleanUp();
+            _CleanUp();
         }
 
         void Update()
         {
+#if UNITY_SWITCH && !UNITY_EDITOR
+            _SwitchNetworkState();
+#endif
             if (_playFabMultiplayerManagerState >= _InternalPlayFabMultiplayerManagerState.Initialized)
             {
                 ProcessQueuedOperations();
@@ -157,11 +171,16 @@ namespace PlayFab.Party
                 }
                 PlayFabEventTracer.instance.DoWork();
             }
+            
+            if(HasTasks())
+            {
+                ProcessTask();
+            }
         }
 
         private void OnDestroy()
         {
-            CleanUp();
+            _CleanUp();
         }
 
         /// <summary>
@@ -271,10 +290,6 @@ namespace PlayFab.Party
         {
             get
             {
-                if (_remotePlayers == null)
-                {
-                    return null;
-                }
                 return _remotePlayers.AsReadOnly();
             }
         }
@@ -447,6 +462,26 @@ namespace PlayFab.Party
         //
 
         /// <summary>
+        /// Resumes Party after it has been suspended.
+        /// </summary>
+        public void Resume()
+        {
+            _LogInfo("PlayFabMultiplayerManager:Resume()");
+            InitializeImpl();
+        }
+
+        /// <summary>
+        /// Suspends execution of Party.
+        /// </summary>
+        public void Suspend()
+        {
+            _LogInfo("PlayFabMultiplayerManager:Suspend()");
+            CleanUpImpl();
+            _tasks.Clear();
+            _runningTask = null;
+        }
+
+        /// <summary>
         /// Creates a network for players to join and send the other players chat and data messages.
         /// </summary>
         public void CreateAndJoinNetwork()
@@ -498,9 +533,10 @@ namespace PlayFab.Party
         /// <param name="buffer">A buffer with the data to send.</param>
         /// <param name="recipients">The players to send the data message to. If the collection of players is empty, the data message will be broadcast to all players.</param>
         /// <param name="deliveryOption">Options specifying how the message will be delivered.</param>
-        public void SendDataMessage(byte[] buffer, IEnumerable<PlayFabPlayer> recipients, DeliveryOption deliveryOption)
+        /// <returns>An indicator whether sending a data message was successful.</returns>
+        public bool SendDataMessage(byte[] buffer, IEnumerable<PlayFabPlayer> recipients, DeliveryOption deliveryOption)
         {
-            _SendDataMessage(buffer, recipients, deliveryOption);
+            return _SendDataMessage(buffer, recipients, deliveryOption);
         }
 
         /// <summary>
@@ -554,8 +590,7 @@ namespace PlayFab.Party
         // Helper methods
         internal static void _LogError(string message)
         {
-            if (!_cleanupStarted &&
-                _logLevel != LogLevelType.None)
+            if (_logLevel != LogLevelType.None)
             {
                 Debug.LogError(message);
             }
@@ -574,16 +609,11 @@ namespace PlayFab.Party
             {
                 errorMessage = "Unknown error.";
             }
-            // If we hit an error while cleaning up the PlayFabPartyManager, don't attempt to raise the
-            // error event because it will fail.
-            if (!_cleanupStarted)
+            PlayFabMultiplayerManager playFabMultiplayerManager = Get();
+            if (playFabMultiplayerManager.OnError != null)
             {
-                PlayFabMultiplayerManager playFabMultiplayerManager = Get();
-                if (playFabMultiplayerManager.OnError != null)
-                {
-                    PlayFabMultiplayerManagerErrorArgs args = new PlayFabMultiplayerManagerErrorArgs((int)code, errorMessage, type);
-                    playFabMultiplayerManager.OnError(playFabMultiplayerManager, args);
-                }
+                PlayFabMultiplayerManagerErrorArgs args = new PlayFabMultiplayerManagerErrorArgs((int)code, errorMessage, type);
+                playFabMultiplayerManager.OnError(playFabMultiplayerManager, args);
             }
             PlayFabEventTracer.instance.OnPlayFabPartyError(code, type);
             _LogError(errorMessage);
@@ -617,13 +647,49 @@ namespace PlayFab.Party
             Debug.Log(infoMessage);
         }
 
+        internal bool _StartsWithSequence(byte[] buffer, byte[] sequence)
+        {
+            bool startsWithSequence = true;
+            if (buffer.Length > sequence.Length + 1)
+            {
+                for (int i = 0; i < sequence.Length; i++)
+                {
+                    if (buffer[i] != sequence[i])
+                    {
+                        startsWithSequence = false;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                startsWithSequence = false;
+            }
+            return startsWithSequence;
+        }
+
+        private bool IsInternalMessage(IntPtr messageBuffer, uint messageSize)
+        {
+            if (messageSize > 0 &&
+                messageSize < _INTERNAL_EXCHANGE_MESSAGE_BUFFER_SIZE)
+            {
+                byte[] internalXuidExchangeMessageBuffer = new byte[_INTERNAL_EXCHANGE_MESSAGE_BUFFER_SIZE];
+                Marshal.Copy(messageBuffer, internalXuidExchangeMessageBuffer, 0, (int)messageSize);
+                return _StartsWithSequence(internalXuidExchangeMessageBuffer, Encoding.ASCII.GetBytes(_INTERNAL_EXCHANGE_REQUEST_MESSAGE_PREFIX));
+            }
+            return false;
+        }
+
         private PlayFabPlayer GetPlayerByEntityId(string entityId)
         {
-            foreach (PlayFabPlayer remotePlayer in _remotePlayers)
+            if (_remotePlayers != null)
             {
-                if (remotePlayer.EntityKey.Id == entityId)
+                foreach (PlayFabPlayer remotePlayer in _remotePlayers)
                 {
-                    return remotePlayer;
+                    if (remotePlayer.EntityKey.Id == entityId)
+                    {
+                        return remotePlayer;
+                    }
                 }
             }
             return null;
@@ -685,7 +751,30 @@ namespace PlayFab.Party
         private void _Initialize()
         {
             _LogInfo("PlayFabMultiplayerManager:_Initialize()");
+            InitializeImpl();
+        }
 
+#if UNITY_EDITOR
+        private void HandlePlayModeStateChanged(PlayModeStateChange args)
+        {
+            // The following is equivalent to the case of exiting play mode.
+            if (!EditorApplication.isPaused &&
+                EditorApplication.isPlaying &&
+                !EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                _CleanUp();
+            }
+        }
+#endif
+
+        private void _CleanUp()
+        {
+            _LogInfo("PlayFabMultiplayerManager:_CleanUp()");
+            CleanUpImpl();
+        }
+
+        private void InitializeImpl()
+        {
             if (_playFabMultiplayerManagerState > _InternalPlayFabMultiplayerManagerState.NotInitialized)
             {
                 return;
@@ -732,20 +821,27 @@ namespace PlayFab.Party
                 TimeoutInMilliseconds = 0
             };
 
+            _localPlayer = new PlayFabLocalPlayer();
             _remotePlayers = new List<PlayFabPlayer>();
             _partyStateChanges = new List<PARTY_STATE_CHANGE>();
             _cachedSendMessageEndpointHandles = new List<PARTY_ENDPOINT_HANDLE[]>();
             _cachedSendMessageChatControlHandles = new List<PARTY_CHAT_CONTROL_HANDLE[]>();
 
-            // The PlayFabMultiplayerManager is a singleton and exists across scenes
-            // for convenience.
-            DontDestroyOnLoad(gameObject);
-            if (string.IsNullOrEmpty(PlayFabSettings.staticSettings.TitleId))
+            if (!gameObjectPersisted)
+            {
+                // On our first call we want to make sure we mark this game object with DontDestroyOnLoad so it
+                // can persist across scenes but only need to call it that first time and not any of the other times we
+                // might re-initialize for example to handle suspend/resume.
+                // The PlayFabMultiplayerManager is a singleton and exists across scenes for convenience.
+
+                gameObjectPersisted = true;
+                DontDestroyOnLoad(gameObject);
+            }
+            string titleId = PlayFabSettings.staticSettings.TitleId;
+            if (string.IsNullOrEmpty(titleId))
             {
                 _LogError(_ErrorMessageMissingPlayFabTitleId);
             }
-            string titleId = PlayFabSettings.staticSettings.TitleId;
-            _localPlayer = new PlayFabLocalPlayer();
             uint errorCode = SDK.PartyInitialize(titleId, out _partyHandle);
             if (PartySucceeded(errorCode))
             {
@@ -768,29 +864,12 @@ namespace PlayFab.Party
             PlayFabEventTracer.instance.OnPlayFabMultiPlayerManagerInitialize();
         }
 
-#if UNITY_EDITOR
-        private void HandlePlayModeStateChanged(PlayModeStateChange args)
+        private void CleanUpImpl()
         {
-            // The following is equivalent to the case of exiting play mode.
-            if (!EditorApplication.isPaused &&
-                EditorApplication.isPlaying &&
-                !EditorApplication.isPlayingOrWillChangePlaymode)
-            {
-                CleanUp();
-            }
-        }
-#endif
-
-        private void CleanUp()
-        {
-            _LogInfo("PlayFabMultiplayerManager:CleanUp()");
-
-            if (_cleanupStarted ||
-                _playFabMultiplayerManagerState <= _InternalPlayFabMultiplayerManagerState.NotInitialized)
+            if (_playFabMultiplayerManagerState <= _InternalPlayFabMultiplayerManagerState.NotInitialized)
             {
                 return;
             }
-            _cleanupStarted = true;
 
             if (_partyHandle != null)
             {
@@ -1034,7 +1113,8 @@ namespace PlayFab.Party
                 MaxDevicesPerUserCount = _DEVICES_PER_USER_COUNT,
                 MaxEndpointsPerDeviceCount = _ENDPOINTS_PER_DEVICE_COUNT,
                 MaxUserCount = (uint)networkConfiguration.MaxPlayerCount,
-                MaxUsersPerDeviceCount = _USERS_PER_DEVICE
+                MaxUsersPerDeviceCount = _USERS_PER_DEVICE,
+                DirectPeerConnectivityOptions = networkConfiguration.DirectPeerConnectivityOptions
             };
 
             var partyInvitationConfiguration = new PARTY_INVITATION_CONFIGURATION
@@ -1364,29 +1444,29 @@ namespace PlayFab.Party
                 ));
         }
 
-        internal void _SendDataMessage(byte[] buffer, IEnumerable<PlayFabPlayer> recipients, DeliveryOption deliveryOption)
+        internal bool _SendDataMessage(byte[] buffer, IEnumerable<PlayFabPlayer> recipients, DeliveryOption deliveryOption)
         {
             _LogInfo("PlayFabMultiplayerManager:_SendDataMessage(byte[] buffer, IEnumerable<PlayFabPlayer> recipients, DeliveryOption deliveryOption)");
 
             if (_playFabMultiplayerManagerState < _InternalPlayFabMultiplayerManagerState.ConnectedToNetwork)
             {
                 _LogError(_ErrorMessageCannotCallAPINotConnectedToNetwork);
-                return;
+                return false;
             }
             if (buffer.Count() == 0)
             {
                 _LogError(_ErrorMessageEmptyDataMessagePayload);
-                return;
+                return false;
             }
             if (recipients.Count() > PartyConstants.c_maxNetworkConfigurationMaxDeviceCount)
             {
                 _LogError(_ErrorMessageTooManyRecipients);
-                return;
+                return false;
             }
 
             PARTY_ENDPOINT_HANDLE[] targetEndpoints = EndPointHandlesFromPlayFabPlayerListNoGC(recipients);
             PARTY_SEND_MESSAGE_OPTIONS sendOptions = SendOptionsFromDeliveryOption(deliveryOption);
-            PartySucceeded(SDK.PartyEndpointSendMessage(
+            return PartySucceeded(SDK.PartyEndpointSendMessage(
                     _localEndPointHandle,
                     targetEndpoints,
                     sendOptions,
@@ -1618,11 +1698,6 @@ namespace PlayFab.Party
 
         internal ChatState _GetChatState(EntityKey entityKey, bool _isLocal)
         {
-            if (_cleanupStarted)
-            {
-                return ChatState.Silent;
-            }
-
             ChatState chatState = ChatState.Silent;
             PARTY_LOCAL_CHAT_CONTROL_CHAT_INDICATOR localChatControlIndicator;
             if (_isLocal)
@@ -2043,11 +2118,8 @@ namespace PlayFab.Party
                                                 JoinNetworkImplComplete(_queuedCompleteJoinAfterLeaveNetworkOp.networkId);
                                             }
                                         }
-                                        else
-                                        {
-                                            _playFabMultiplayerManagerState = _InternalPlayFabMultiplayerManagerState.Initialized;
-                                        }
                                     }
+                                    _playFabMultiplayerManagerState = _InternalPlayFabMultiplayerManagerState.Initialized;
                                     break;
                                 }
                             case PARTY_STATE_CHANGE_TYPE.PARTY_STATE_CHANGE_TYPE_REMOTE_DEVICE_CREATED:
@@ -2308,13 +2380,13 @@ namespace PlayFab.Party
                                     PlayFabPlayer fromPlayer = GetPlayerByEntityId(newPlayerEntityId) as PlayFabPlayer;
                                     if (fromPlayer != null)
                                     {
-                                        bool internalMessage = false;
+                                        bool internalPlatformMessage = false;
                                         if (_platformPolicyProvider != null)
                                         {
-                                            _platformPolicyProvider.ProcessEndpointMessage(fromPlayer, stateChangeConverted.messageBuffer, stateChangeConverted.messageSize, out internalMessage);
+                                            _platformPolicyProvider.ProcessEndpointMessage(fromPlayer, stateChangeConverted.messageBuffer, stateChangeConverted.messageSize, out internalPlatformMessage);
                                         }
 
-                                        if (!internalMessage)
+                                        if (!internalPlatformMessage && !IsInternalMessage(stateChangeConverted.messageBuffer, stateChangeConverted.messageSize))
                                         {
                                             _RaiseDataMessageReceivedEvent(fromPlayer, stateChangeConverted.messageBuffer, stateChangeConverted.messageSize);
                                         }
@@ -2437,6 +2509,223 @@ namespace PlayFab.Party
                     PartySucceeded(SDK.PartyFinishProcessingStateChanges(_partyHandle, _partyStateChanges));
                 }
             }
+        }
+
+        public void ResetParty()
+        {
+            Debug.Log("ResetParty");
+            _tasks.Clear();
+            _runningTask = null;
+            var mpManager = PlayFabMultiplayerManager.Get();
+            if(mpManager.IsNotInitializedState() || mpManager.IsPendingInitializationState())
+            {
+                Debug.Log("No reinitialization required.");
+                return ;
+            }
+            if(_networkId != null && mpManager.IsConnectedToNetworkState())
+            {
+                AddTask(new LeaveNetworkTask());
+            }
+            AddTask(new CleanPartyTask());
+            AddTask(new InitPartyTask());
+            if(_networkId != null && mpManager.IsConnectedToNetworkState())
+            {
+                AddTask(new JoinPartyTask(_networkId));
+            }
+        }
+
+        private void AddTask(WorkTask task)
+        {
+            _tasks.Add(task);
+        }
+
+        private bool IsNotInitializedState()
+        {
+            return _playFabMultiplayerManagerState == _InternalPlayFabMultiplayerManagerState.NotInitialized;
+        }
+
+        private bool IsPendingInitializationState()
+        {
+            return _playFabMultiplayerManagerState == _InternalPlayFabMultiplayerManagerState.PendingInitialization;
+        }
+
+        private bool IsInitializedState()
+        {
+            return _playFabMultiplayerManagerState == _InternalPlayFabMultiplayerManagerState.Initialized;
+        }
+
+        private bool IsConnectedToNetworkState()
+        {
+            return _playFabMultiplayerManagerState == _InternalPlayFabMultiplayerManagerState.ConnectedToNetwork;
+        }
+
+        private abstract class WorkTask
+        {
+            // Used to determine whether task is executable.
+            // If Begin() returns false, the task will not run.
+            public abstract bool Begin();
+            // Return true if the task is done. 
+            public abstract bool Run();
+            // Cleanup the task.
+            public abstract void End();
+        }
+
+        private class LeaveNetworkTask : WorkTask
+        {
+            public override bool Begin()
+            {
+                Debug.Log("Task: LeaveNetworkTask");
+                var mpManager = PlayFabMultiplayerManager.Get();
+                if(mpManager.IsConnectedToNetworkState())
+                {
+                    mpManager.LeaveNetwork();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            public override bool Run()
+            {
+                var mpManager = PlayFabMultiplayerManager.Get();
+                if(!mpManager.IsConnectedToNetworkState())
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            public override void End()
+            {
+            }
+        }
+
+        private class CleanPartyTask : WorkTask
+        {
+            public override bool Begin()
+            {
+                Debug.Log("Task: CleanPartyTask");
+                var mpManager = PlayFabMultiplayerManager.Get();
+                if(!mpManager.IsNotInitializedState())
+                {
+                    mpManager._CleanUp();
+                }
+                return true;
+            }
+
+            public override bool Run()
+            {
+                var mpManager = PlayFabMultiplayerManager.Get();
+                if(mpManager.IsNotInitializedState())
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            public override void End()
+            {
+            }
+        }
+
+        private class InitPartyTask : WorkTask
+        {
+            public override bool Begin()
+            {
+                Debug.Log("Task: InitPartyTask()");
+                var mpManager = PlayFabMultiplayerManager.Get();
+                if(!mpManager.IsInitializedState())
+                {
+                    mpManager._Initialize();
+                    return true;
+                }
+                return false;
+            }
+
+            public override bool Run()
+            {
+                var mpManager = PlayFabMultiplayerManager.Get();
+                if(mpManager.IsInitializedState())
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            public override void End()
+            {
+            }
+        }
+
+        private class JoinPartyTask : WorkTask
+        {
+            private string _networkId;
+
+            public JoinPartyTask(string networkId)
+            {
+                _networkId = networkId;
+            }
+
+            public override bool Begin()
+            {
+                Debug.Log("Task: JoinPartyTask");
+                var mpManager = PlayFabMultiplayerManager.Get();
+                if(!mpManager.IsConnectedToNetworkState())
+                {
+                    mpManager.JoinNetwork(_networkId);
+                    return true;
+                }
+                return false;
+            }
+
+            public override bool Run()
+            {
+                var mpManager = PlayFabMultiplayerManager.Get();
+                if(mpManager.IsConnectedToNetworkState())
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            public override void End()
+            {
+            }
+        }
+
+        private void ProcessTask()
+        {
+            if(_runningTask == null)
+            {
+                while(_tasks.Count > 0)
+                {
+                    _runningTask = _tasks[0];
+                    _tasks.RemoveAt(0);
+                    if(_runningTask.Begin())
+                    {
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                if(_runningTask.Run())
+                {
+                    _runningTask.End();
+                    _runningTask = null;
+                }
+            }
+        }
+
+        private bool HasTasks()
+        {
+            if(_runningTask != null)
+            {
+                return true;
+            }
+            return _tasks.Count > 0;
         }
 
         internal enum _InternalPlayFabMultiplayerManagerState

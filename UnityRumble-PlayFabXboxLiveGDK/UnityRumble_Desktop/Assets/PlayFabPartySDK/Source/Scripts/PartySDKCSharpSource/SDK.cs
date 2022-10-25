@@ -1295,6 +1295,16 @@ namespace PartyCSharpSDK
             return err;
         }
 
+        public static UInt32 PartyNetworkGetDeviceConnectionType(
+            PARTY_NETWORK_HANDLE network,
+            PARTY_DEVICE_HANDLE targetDevice,
+            out PARTY_DEVICE_CONNECTION_TYPE deviceConnectionType)
+        {
+            return PFPInterop.PartyNetworkGetDeviceConnectionType(network.InteropHandle,
+                                                                  targetDevice.InteropHandle,
+                                                                  out deviceConnectionType);
+        }
+
         // PartyEndpoint
         public static UInt32 PartyEndpointSendMessage(
             PARTY_ENDPOINT_HANDLE endpoint,

@@ -5,17 +5,13 @@ namespace PartyCSharpSDK.Interop
 {
     partial class PFPInterop
     {
-        //PartyDeviceGetProperty(
+        //PartyDeviceGetSharedProperty(
         //    PARTY_DEVICE_HANDLE device,
         //    PartyString key,
         //    _Outptr_result_maybenull_ const PARTY_DATA_BUFFER** value
         //    );
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
-#if (UNITY_SWITCH || UNITY_PS4 || UNITY_PS5) && !UNITY_EDITOR
         unsafe internal static extern UInt32 PartyDeviceGetSharedProperty(
-#else
-        unsafe internal static extern UInt32 PartyDeviceGetProperty(
-#endif
             PARTY_DEVICE_HANDLE device,
             Byte[] key,
             out PARTY_DATA_BUFFER* value);
@@ -65,34 +61,26 @@ namespace PartyCSharpSDK.Interop
             PARTY_DEVICE_HANDLE device,
             IntPtr customContext);
 
-        //PartyDeviceSetProperties(
+        //PartyDeviceSetSharedProperties(
         //    PARTY_DEVICE_HANDLE device,
         //    uint32_t propertyCount,
         //    _In_reads_(propertyCount) const PartyString* keys,
         //    _In_reads_(propertyCount) const PARTY_DATA_BUFFER* values
         //    );
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
-#if (UNITY_SWITCH || UNITY_PS4 || UNITY_PS5) && !UNITY_EDITOR
         internal static extern UInt32 PartyDeviceSetSharedProperties(
-#else
-        internal static extern UInt32 PartyDeviceSetProperties(
-#endif
             PARTY_DEVICE_HANDLE device,
             UInt32 propertyCount,
             [In] UTF8StringPtr[] keys,
             [In] PARTY_DATA_BUFFER[] values);
 
-        //PartyDeviceGetPropertyKeys(
+        //PartyDeviceGetSharedPropertyKeys(
         //    PARTY_DEVICE_HANDLE device,
         //    _Out_ uint32_t* propertyCount,
         //    _Outptr_result_buffer_(*propertyCount) const PartyString** keys
         //    );
         [DllImport(ThunkDllName, CallingConvention = CallingConvention.StdCall)]
-#if (UNITY_SWITCH || UNITY_PS4 || UNITY_PS5) && !UNITY_EDITOR
         internal static extern UInt32 PartyDeviceGetSharedPropertyKeys(
-#else
-        internal static extern UInt32 PartyDeviceGetPropertyKeys(
-#endif
             PARTY_DEVICE_HANDLE device,
             out UInt32 propertyCount,
             out UTF8StringPtr[] keys);
