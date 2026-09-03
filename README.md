@@ -1,3 +1,9 @@
+# Archived
+
+This repository is archived and will be receiving no additional updates.
+
+The [archive-release](https://github.com/PlayFab/PlayFabUnityRumble/tree/archive-release) branch can be used for legacy inspection purposes.
+
 # Unity Net.Rumble (UnityRumble) Demo Game
 
 _(Please use Git client with Large File Storage (LFS) support to work with this repo)_
